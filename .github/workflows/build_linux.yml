@@ -111,5 +111,5 @@ jobs:
     uses: ./.github/workflows/test_linux.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.os-version }}-${{ inputs.c-compiler }}"
-      os-version: "22.04"
+      os-version: '${{ inputs.os-version }}'
     secrets: inherit
