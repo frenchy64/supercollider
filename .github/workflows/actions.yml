@@ -42,7 +42,6 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       sc-version: ${{ steps.set-version.outputs.version }}
-      sc-version: ${{ steps.set-version.outputs.version }}
 
     steps:
       - name: set version string for artifacts
