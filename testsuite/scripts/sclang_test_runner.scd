@@ -1,15 +1,23 @@
-// this script is meant to be run with two arguments: path to test prototype indicating tests to be run, and path to test result
+// this script is meant to be run with four arguments:
+// 1. path to test prototype indicating tests to be run
+// 2. path to test result
+// 3. which partition of the tests should be run (zero based)
+// 4. the number of test partitions
 (
 ~exitWhenDone = false;
 if(thisProcess.argv.size > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
+	~thisSplit = thisProcess.argv[2];
+	~nSplits = thisProcess.argv[3];
 	~exitWhenDone = true;
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";
 	// ~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_all.scd"; // for testing
 	~testResult = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "run" +/+ "test_result.scxtar";
+	~thisSplit = 0;
+	~nSplits = 1;
 };
 
 if(File.exists(~testProto).not) {
@@ -18,6 +26,7 @@ if(File.exists(~testProto).not) {
 
 "~testProto path: %".format(~testProto).postln;
 "~testResult path: %".format(~testResult).postln;
+"split % of %".format(~thisSplit, ~nSplits).postln;
 
 ~verboseSetup = false; // true or false
 
@@ -62,6 +71,11 @@ if(File.exists(~testProto).not) {
 
 	testsDict;
 };
+
+~selectThisTestSplit = {|tests,thisSplit,nSplits|
+  tests.clump(tests.size()/nSplits)[thisSplit] ?? #[];
+};
+
 
 ~testrun = {|protoFile, resultFile|
 	var tests = ~getTestRecord.(protoFile);
@@ -143,6 +157,10 @@ if(File.exists(~testProto).not) {
 	// test_record["tests"] = tests;
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
+
+  tests = ~selectThisTestSplit(tests, ~thisSplit, ~nSplits);
+
+	~verboseSetup.if({"After split: ".post; tests.do(_.postln)});
 
 	"\n\n\t*** Running the tests ***\n\n".post;
 
