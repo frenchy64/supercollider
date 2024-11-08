@@ -2,6 +2,9 @@ name: Build and Test Linux
 on:
   workflow_call:
     inputs:
+      sc-version:
+        required: true
+        type: string
       job-name:
         required: true
         type: string
