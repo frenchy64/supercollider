@@ -9,8 +9,8 @@ if(thisProcess.argv.size > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
-	~thisSplit = thisProcess.argv[2];
-	~nSplits = thisProcess.argv[3];
+	~thisSplit = thisProcess.argv[2].asInteger();
+	~nSplits = thisProcess.argv[3].asInteger();
 	~exitWhenDone = true;
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";
@@ -73,13 +73,7 @@ if(File.exists(~testProto).not) {
 };
 
 ~selectThisTestSplit = {|tests,thisSplit,nSplits|
-  //????
-  // sclang testsuite/scripts/sclang_test_runner.scd testsuite/scripts/test_run_proto_gha.scd testsuite/scripts/run/gha_result.scxtar 0 1
-
-  var s;
-  tests.size()/nSplits;
-  s = tests.size()/nSplits;
-  tests.clump(s).at(thisSplit) ?? #[];
+  tests.clump(tests.size()/nSplits).at(thisSplit) ?? #[];
 };
 
 
