@@ -29,8 +29,8 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-${{ matrix.os-version }}
-    name: Ubuntu ${{ matrix.os-version }} ${{ matrix.c-compiler }} ${{ matrix.job-name }}
+    runs-on: "ubuntu-${{ inputs.os-version }}"
+    name: Ubuntu ${{ inputs.os-version }} ${{ inputs.c-compiler }} ${{ inputs.job-name }}
     env:
       BUILD_PATH: ${{ github.workspace }}/build
       INSTALL_PATH: ${{ github.workspace }}/build/Install
@@ -55,8 +55,8 @@ jobs:
           path: |
             ~/.ccache
             ~/.cache/ccache
-          key: ${{ runner.os }}-${{ matrix.os-version }}-${{ matrix.c-compiler }}-${{ matrix.use-syslibs }}-${{ matrix.shared-libscsynth }}-${{ steps.current-date.outputs.stamp }}
-          restore-keys: ${{ runner.os }}-${{ matrix.os-version }}-${{ matrix.c-compiler }}-${{ matrix.use-syslibs }}-${{ matrix.shared-libscsynth }}-
+          key: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.c-compiler }}-${{ inputs.use-syslibs }}-${{ inputs.shared-libscsynth }}-${{ steps.current-date.outputs.stamp }}
+          restore-keys: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.c-compiler }}-${{ inputs.use-syslibs }}-${{ inputs.shared-libscsynth }}-
 
       - name: install dependencies
         run: |
