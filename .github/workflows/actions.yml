@@ -55,9 +55,9 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             FULL_TAG=${GITHUB_REF#refs/tags/}
-            SC_VERSION=${FULL_TAG##Version-}
+            export SC_VERSION=${FULL_TAG##Version-}
           else
-            SC_VERSION=$GITHUB_SHA
+            export SC_VERSION=$GITHUB_SHA
           fi
           ./actions/set_params_output.clj
 
