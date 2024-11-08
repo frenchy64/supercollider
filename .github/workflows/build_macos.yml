@@ -212,7 +212,9 @@ jobs:
 
       - id: prepare-test-splits
         run: |
-          echo "test-splits='4'" >> $GITHUB_OUTPUT
+          NUMBER_OF_TEST_SPLITS=4
+          echo "test-splits=$NUMBER_OF_TEST_SPLITS" >> $GITHUB_OUTPUT
+          # TODO generate based on $NUMBER_OF_TEST_SPLITS
           echo "splits-matrix='[0,1,2,3]" >> $GITHUB_OUTPUT
   test-macos:
     needs: build-macos
