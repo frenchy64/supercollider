@@ -132,15 +132,6 @@ jobs:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
     secrets: inherit
 
-  test-linux:
-    needs: [version-getter]
-    uses: ./.github/workflows/test_linux.yml
-    with:
-      sc-version: "${{ needs.version-getter.outputs.sc-version }}"
-      os-version: "22.04"
-      c-compiler: "gcc-12"
-    secrets: inherit
-
   test-macos:
     needs: [version-getter, build-macos]
     uses: ./.github/workflows/test_macos.yml
@@ -157,7 +148,7 @@ jobs:
 
   # useful for branch protection rules
   valid-pull-request:
-    needs: [lint, build-and-test-linux, test-linux, build-macos, test-macos, build-windows]
+    needs: [lint, build-and-test-linux, build-macos, test-macos, build-windows]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
