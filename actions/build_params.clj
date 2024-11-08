@@ -31,7 +31,7 @@
 (defn -main []
   (println "Setting build params:")
   (println (json/encode (all-params) {:pretty true}))
-  (println "echo" (pr-str (str "params=" (json/encode (all-params)))) ">> $GITHUB_OUTPUT"))
+  (println "echo" (str "'params=" (json/encode (all-params)) "'") ">> $GITHUB_OUTPUT"))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))
