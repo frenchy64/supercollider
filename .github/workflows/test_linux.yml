@@ -15,8 +15,7 @@ jobs:
     uses: ./.github/workflows/build_linux.yml
     with:
       sc-version: ${{ inputs.sc-version }}
-      matrix: ${{
-       '[
+      matrix: '[
           {
             "job-name": "",
             "os-version": ${{ env.OS_VERSION }},
@@ -26,7 +25,7 @@ jobs:
             "shared-libscsynth": false,
             "artifact-suffix": "ubuntu-${{ env.OS_VERSION }}-${{ env.C_COMPILER }}"
           }
-        ]' }}
+        ]'
     secrets: inherit
   test-linux:
     needs: build-linux
