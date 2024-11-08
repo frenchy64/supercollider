@@ -5,10 +5,12 @@ on:
       sc-version:
         required: true
         type: string
-
-env:
-  OS_VERSION: "22.04"
-  C_COMPILER: "gcc-12"
+      os-version:
+        required: true
+        type: string
+      c-compiler:
+        required: true
+        type: string
 
 jobs:
   build-linux:
@@ -18,21 +20,21 @@ jobs:
       matrix: '[
           {
             "job-name": "",
-            "os-version": "${{ env.OS_VERSION }}",
-            "c-compiler": "${{ env.C_COMPILER }}",
+            "os-version": "${{ inputs.os-version }}",
+            "c-compiler": "${{ inputs.c-compiler }}",
             "cxx-compiler": "g++-12",
             "use-syslibs": false,
             "shared-libscsynth": false,
-            "artifact-suffix": "ubuntu-${{ env.OS_VERSION }}-${{ env.C_COMPILER }}"
+            "artifact-suffix": "ubuntu-${{ inputs.os-version }}-${{ inputs.c-compiler }}"
           }
         ]'
     secrets: inherit
   test-linux:
     needs: build-linux
-    runs-on: ubuntu-${{ env.OS_VERSION }}
+    runs-on: ubuntu-${{ inputs.os-version }}
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
-      ARTIFACT_FILE: "SuperCollider-${{ inputs.sc-version }}-ubuntu-${{ env.OS_VERSION }}-${{ env.C_COMPILER }}"
+      ARTIFACT_FILE: "SuperCollider-${{ inputs.sc-version }}-ubuntu-${{ inputs.os-version }}-${{ inputs.c-compiler }}"
       TESTS_PATH: ${{ github.workspace }}/testsuite/classlibrary
       SCLANG: ${{ github.workspace }}/build/Install/bin/sclang
       TEST_LIST_PROTO: ${{ github.workspace }}/testsuite/scripts/test_run_proto_gha.scd

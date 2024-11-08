@@ -78,15 +78,6 @@ jobs:
             "shared-libscsynth": false
           },
           {
-            "job-name": "",
-            "os-version": "22.04",
-            "c-compiler": "gcc-12",
-            "cxx-compiler": "g++-12",
-            "use-syslibs": false,
-            "shared-libscsynth": false,
-            "artifact-suffix": "ubuntu-22.04-gcc12"
-          },
-          {
             "job-name": "use system libraries",
             "os-version": "24.04",
             "c-compiler": "gcc-13",
@@ -164,6 +155,8 @@ jobs:
     uses: ./.github/workflows/test_linux.yml
     with:
       sc-version: "${{ needs.version-getter.outputs.sc-version }}"
+      os-version: "22.04"
+      c-compiler: "gcc-12"
     secrets: inherit
 
   test-macos:
