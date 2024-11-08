@@ -1,8 +1,11 @@
 #!/usr/bin/env bb
-;; output build params to "params"
+;; Run locally:
+;; SC_VERSION=1 ./actions/build_params.clj
 
 (ns build-params
   (:require [cheshire.core :as json]))
+
+(defn add-json-matrix [v] (into [] (mapv #(assoc % :json-matrix (json/encode %)) v)))
 
 (defn all-params []
   {:sc-version (or (System/getenv "SC_VERSION") (throw (ex-info "Must set $SC_VERSION" {})))
@@ -21,7 +24,8 @@
                      (into (map #(do {:os-version (if (<= % 11) "22.04" "24.04")
                                       :c-compiler (str "clang-" %)
                                       :cxx-compiler (str "clang++-" %)}))
-                           [11 15 16 17 18]))
+                           [11 15 16 17 18])
+                     add-json-matrix)
    :macos-matrix []})
 
 (defn -main []

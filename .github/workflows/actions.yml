@@ -41,13 +41,14 @@ jobs:
   build-params:
     runs-on: ubuntu-22.04
     outputs:
-      params: ${{ steps.set-version.outputs.version }}
+      sc-version: ${{ steps.set-params.outputs.sc-version }}
+      params: ${{ steps.set-params.outputs.params }}
     steps:
       - uses: DeLaGuardo/setup-clojure@12.6
         with:
           bb: 1.12.194
       - name: set version string for artifacts
-        id: set-version
+        id: set-params
         run: |
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             FULL_TAG=${GITHUB_REF#refs/tags/}
@@ -55,21 +56,19 @@ jobs:
           else
             SC_VERSION=$GITHUB_SHA
           fi
-          ./actions/build_params.clj
+          echo "
           echo "version=$SC_VERSION" >> $GITHUB_OUTPUT
+          ./actions/build_params.clj
 
   build-and-test-linux:
     needs: build-params
-    uses: ./.github/workflows/linux_matrix.yml
+    uses: ./.github/workflows/build_linux.yml
     with:
-      sc-version: ${{ needs.build-params.outputs.sc-version }}
-      job-name: ${{ matrix.job-name || '' }}
-      os-version: ${{ matrix.os-version }}
-      c-compiler: ${{ matrix.c-compiler }}
-      cxx-compiler: ${{ matrix.cxx-compiler }}
-      use-syslibs: ${{ matrix.use-syslibs || false }}
-      shared-libscsynth: ${{ matrix.shared-libscsynth || false }}
-      run-tests: ${{ matrix.run-tests || false }}
+      build-params: ${{ toJSON(needs.build-params.outputs.params) }}
+      this-matrix: ${{ matrix.json-matrix }}
+    strategy:
+      matrix:
+        includes: ${{ toJSON(needs.build-params.outputs.params).linux-matrix }}
     secrets: inherit
 
   build-macos:
