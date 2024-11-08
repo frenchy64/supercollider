@@ -55,8 +55,6 @@ jobs:
           else
             SC_VERSION=$GITHUB_SHA
           fi
-          echo "
-          echo "version=$SC_VERSION" >> $GITHUB_OUTPUT
           ./actions/build_params.clj
 
   build-and-test-linux:

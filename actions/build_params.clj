@@ -32,11 +32,12 @@
    :macos-matrix []})
 
 (defn -main []
-  (println "Setting build params:")
-  (println (json/encode (all-params) {:pretty true}))
-  (spit (or (System/getenv "GITHUB_OUTPUT") (throw (ex-info "Must set $GITHUB_OUTPUT")))
-        (str "params='" (json/encode (all-params)) "'\n")
-        :append true))
+  (let [params (all-params)]
+    (println "Setting build params:")
+    (println (json/encode params {:pretty true}))
+    (spit (or (System/getenv "GITHUB_OUTPUT") (throw (ex-info "Must set $GITHUB_OUTPUT")))
+          (str "params='" (json/encode params) "'\n")
+          :append true)))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))
