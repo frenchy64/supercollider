@@ -56,6 +56,7 @@ jobs:
             SC_VERSION=$GITHUB_SHA
           fi
           ./actions/build_params.clj
+          echo "version=$SC_VERSION" >> $GITHUB_OUTPUT
 
   build-and-test-linux:
     needs: build-params
