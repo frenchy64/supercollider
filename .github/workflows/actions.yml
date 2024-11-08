@@ -202,7 +202,7 @@ jobs:
       vcpkg-triplet: ${{ matrix.vcpkg-triplet }}
       extra-cmake-flags: ${{ matrix.extra-cmake-flags }}
       artifact-suffix: ${{ matrix.artifact-suffix || '' }}
-      run-tests: ${{ matrix.run-tests || false }}
+      run-tests: ${{ matrix.run-tests || !startsWith(github.ref, 'refs/tags/') }}
     secrets: inherit
 
   build-windows:
