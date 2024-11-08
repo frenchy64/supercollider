@@ -61,8 +61,7 @@ jobs:
     uses: ./.github/workflows/build_linux.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
-      matrix: ${{
-       '[
+      matrix: '[
           {
             "job-name": "",
             "os-version": "22.04",
@@ -144,7 +143,7 @@ jobs:
             "use-syslibs": false,
             "shared-libscsynth": false
           }
-        ]' }}
+        ]'
     secrets: inherit
 
   build-macos:
