@@ -179,6 +179,7 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_FILE }}
           path: ${{ env.INSTALL_PATH }}/${{ env.ARTIFACT_FILE }}
+
   test-macos:
     if: inputs.run-tests
     needs: build-macos
@@ -186,4 +187,4 @@ jobs:
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
       os-version: ${{ inputs.os-version }}
-  ecrets: inherit
+    secrets: inherit
