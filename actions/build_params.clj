@@ -1,6 +1,9 @@
 #!/usr/bin/env bb
 ;; Run locally:
-;; SC_VERSION=1 ./actions/build_params.clj
+;; $ GITHUB_OUTPUT=ghoutput SC_VERSION=1 ./actions/build_params.clj
+;; $ cat ghoutput
+;; params='{"sc-version":"1", ...etc...}'
+;; $
 
 (ns build-params
   (:require [cheshire.core :as json]))
@@ -31,7 +34,9 @@
 (defn -main []
   (println "Setting build params:")
   (println (json/encode (all-params) {:pretty true}))
-  (println "echo" (str "'params=" (json/encode (all-params)) "'") ">> $GITHUB_OUTPUT"))
+  (spit (or (System/getenv "GITHUB_OUTPUT") (throw (ex-info "Must set $GITHUB_OUTPUT")))
+        (str "params='" (json/encode (all-params)) "'\n")
+        :append true))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))
