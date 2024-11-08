@@ -16,7 +16,7 @@
                               :shared-libscsynth true}
                           {})))
         [9 11 12 13 14])
-      (into (map #(do {:os-version (if (= 11 %) "22.04" "24.04")
+      (into (map #(do {:os-version (if (<= % 11) "22.04" "24.04")
                        :c-compiler (str "clang-" %)
                        :cxx-compiler (str "clang++-" %)}))
             [11 15 16 17 18])))
