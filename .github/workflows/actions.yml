@@ -55,9 +55,84 @@ jobs:
           fi
           echo "version=$SC_VERSION" >> $GITHUB_OUTPUT
 
-  build-linux:
+  build-and-test-linux:
     needs: [version-getter]
     uses: ./.github/workflows/build_linux.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "gcc-9"
+            cxx-compiler: "g++-9"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "gcc-11"
+            cxx-compiler: "g++-11"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "gcc-12"
+            cxx-compiler: "g++-12"
+            use-syslibs: false
+            shared-libscsynth: false
+            run-tests: true
+
+          - job-name: "use system libraries"
+            os-version: "24.04"
+            c-compiler: "gcc-13"
+            cxx-compiler: "g++-13"
+            use-syslibs: true
+            shared-libscsynth: false
+
+          - job-name: "shared libscsynth"
+            os-version: "24.04"
+            c-compiler: "gcc-14"
+            cxx-compiler: "g++-14"
+            use-syslibs: false
+            shared-libscsynth: true
+            
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "clang-11"
+            cxx-compiler: "clang++-11"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-15"
+            cxx-compiler: "clang++-15"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-16"
+            cxx-compiler: "clang++-16"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-17"
+            cxx-compiler: "clang++-17"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-18"
+            cxx-compiler: "clang++-18"
+            use-syslibs: false
+            shared-libscsynth: false
+
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
       matrix: '[
@@ -175,7 +250,7 @@ jobs:
 
   # useful for branch protection rules
   valid-pull-request:
-    needs: [lint, build-linux, test-linux, build-macos, test-macos, build-windows]
+    needs: [lint, build-and-test-linux, test-linux, build-macos, test-macos, build-windows]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
