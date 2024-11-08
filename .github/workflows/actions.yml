@@ -55,7 +55,7 @@ jobs:
           else
             SC_VERSION=$GITHUB_SHA
           fi
-          ./actions/build_params.clj
+          ./actions/set_params_output.clj
 
   build-and-test-linux:
     needs: build-params
