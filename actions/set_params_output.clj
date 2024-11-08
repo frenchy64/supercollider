@@ -5,10 +5,10 @@
 ;; params='{"sc-version":"1", ...etc...}'
 ;; $
 
-(ns build-params
+(ns actions.set-params-output
   (:require [cheshire.core :as json]))
 
-(defn add-json-matrix [v] (into [] (mapv #(assoc % :json-matrix (json/encode %)) v)))
+(defn add-json-matrix [v] (mapv #(assoc % :json-matrix (json/encode %)) v))
 
 (defn all-params []
   {:sc-version (or (System/getenv "SC_VERSION") (throw (ex-info "Must set $SC_VERSION" {})))
