@@ -18,8 +18,8 @@ jobs:
       matrix: '[
           {
             "job-name": "",
-            "os-version": ${{ env.OS_VERSION }},
-            "c-compiler": ${{ env.C_COMPILER }},
+            "os-version": "${{ env.OS_VERSION }}",
+            "c-compiler": "${{ env.C_COMPILER }}",
             "cxx-compiler": "g++-12",
             "use-syslibs": false,
             "shared-libscsynth": false,
