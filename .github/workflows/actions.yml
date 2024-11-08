@@ -56,7 +56,7 @@ jobs:
           echo "version=$SC_VERSION" >> $GITHUB_OUTPUT
 
   build-linux:
-    needs: [lint, version-getter]
+    needs: [version-getter]
     uses: ./.github/workflows/build_linux.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
@@ -137,14 +137,14 @@ jobs:
     secrets: inherit
 
   build-macos:
-    needs: [lint, version-getter]
+    needs: [version-getter]
     uses: ./.github/workflows/build_macos.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
     secrets: inherit
 
   build-windows:
-    needs: [lint, version-getter]
+    needs: [version-getter]
     uses: ./.github/workflows/build_windows.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
@@ -175,7 +175,7 @@ jobs:
 
   # useful for branch protection rules
   valid-pull-request:
-    needs: [build-linux, test-linux, test-macos, build-windows ]
+    needs: [lint, build-linux, test-linux, build-macos, test-macos, build-windows]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
