@@ -118,7 +118,7 @@ jobs:
       run-tests: ${{ matrix.run-tests || false }}
     secrets: inherit
 
-  build-and-test-macos:
+  build-macos:
     needs: [lint, version-getter]
     uses: ./.github/workflows/build_macos.yml
     with:
@@ -132,6 +132,14 @@ jobs:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
     secrets: inherit
 
+
+
+  test-macos:
+    needs: [version-getter, build-macos]
+    uses: ./.github/workflows/test_macos.yml
+    with:
+      artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-macOS-x64.dmg"
+    secrets: inherit
 
   # test-windows:
   #   needs: [version-getter, build-windows]
@@ -167,7 +175,7 @@ jobs:
             s3-create-latest-link: true # create link to pointing to the "latest" build
 
     if: github.repository_owner == 'supercollider' && github.event_name != 'pull_request' # run in the main repo, but not on pull requests
-    needs: [lint, version-getter, build-and-test-macos, build-windows]
+    needs: [lint, version-getter, build-macos, build-windows]
     runs-on: ubuntu-latest
     name: 'deploy ${{ matrix.artifact-suffix }} to s3'
     env:
@@ -240,7 +248,7 @@ jobs:
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
-    needs: [lint, version-getter, build-and-test-macos, build-windows]
+    needs: [lint, version-getter, build-macos, build-windows]
     runs-on: ubuntu-latest
     name: 'deploy release'
     env:

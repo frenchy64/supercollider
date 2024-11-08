@@ -9,9 +9,6 @@ on:
 jobs:
   build-macos:
     runs-on: macos-${{ matrix.os-version }}
-    outputs:
-      test-splits: ${{ steps.prepare-test-splits.test-splits }}
-      splits-matrix: ${{ steps.prepare-test-splits.splits-matrix }}
     strategy:
       fail-fast: false
       matrix:
@@ -209,19 +206,3 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_FILE }}
           path: ${{ env.INSTALL_PATH }}/${{ env.ARTIFACT_FILE }}
-
-      - id: prepare-test-splits
-        run: |
-          NUMBER_OF_TEST_SPLITS=4
-          echo "test-splits=$NUMBER_OF_TEST_SPLITS" >> $GITHUB_OUTPUT
-          # TODO generate based on $NUMBER_OF_TEST_SPLITS
-          echo "splits-matrix='[0,1,2,3]" >> $GITHUB_OUTPUT
-  test-macos:
-    needs: build-macos
-    uses: ./.github/workflows/test_macos.yml
-    if: needs.build-macos.outputs.test-splits > 0
-    with:
-      artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-macOS-x64.dmg"
-      test-splits: ${{ needs.build-macos.outputs.test-splits }}
-      splits-matrix: ${{ needs.build-macos.outputs.splits-matrix }}
-    secrets: inherit
