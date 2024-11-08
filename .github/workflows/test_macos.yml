@@ -12,6 +12,7 @@ on:
 jobs:
   test-macos:
     runs-on: "macos-${{ inputs.os-version }}"
+    timeout-minutes: 15
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       ARTIFACT_FILE: ${{ inputs.artifact-file }}

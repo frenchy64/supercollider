@@ -11,6 +11,7 @@ on:
 
 jobs:
   test-linux:
+    timeout-minutes: 15
     runs-on: ubuntu-${{ inputs.os-version }}
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
@@ -67,6 +68,7 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
+          set -x
           # add path
           $SCLANG $SCRIPT_ADD_PATH $TESTS_PATH
           # run tests

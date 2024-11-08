@@ -9,6 +9,7 @@ on:
 jobs:
   build-windows:
     runs-on: windows-${{ matrix.os-version }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:

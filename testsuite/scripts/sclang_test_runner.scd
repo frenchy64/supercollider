@@ -73,7 +73,13 @@ if(File.exists(~testProto).not) {
 };
 
 ~selectThisTestSplit = {|tests,thisSplit,nSplits|
-  tests.clump(tests.size()/nSplits)[thisSplit] ?? #[];
+  //????
+  // sclang testsuite/scripts/sclang_test_runner.scd testsuite/scripts/test_run_proto_gha.scd testsuite/scripts/run/gha_result.scxtar 0 1
+
+  var s;
+  tests.size()/nSplits;
+  s = tests.size()/nSplits;
+  tests.clump(s).at(thisSplit) ?? #[];
 };
 
 
@@ -158,7 +164,7 @@ if(File.exists(~testProto).not) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
-  tests = ~selectThisTestSplit(tests, ~thisSplit, ~nSplits);
+  tests = ~selectThisTestSplit.(tests, ~thisSplit, ~nSplits);
 
 	~verboseSetup.if({"After split: ".post; tests.do(_.postln)});
 

@@ -48,6 +48,7 @@ on:
 jobs:
   build-macos:
     runs-on: "macos-${{ inputs.os-version }}"
+    timeout-minutes: 15
     name: macOS ${{ inputs.job-name }}
     env:
       BUILD_PATH: ${{ github.workspace }}/build
@@ -183,6 +184,7 @@ jobs:
   test-macos:
     if: inputs.run-tests
     needs: build-macos
+    timeout-minutes: 15
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
