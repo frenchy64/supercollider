@@ -109,7 +109,6 @@ jobs:
   test-linux:
     if: inputs.run-tests
     needs: build-linux
-    timeout-minutes: 15
     uses: ./.github/workflows/test_linux.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.os-version }}-${{ inputs.c-compiler }}"
