@@ -219,7 +219,8 @@ jobs:
   test-macos:
     needs: build-macos
     uses: ./.github/workflows/test_macos.yml
-    if: build-macos.outputs.test-splits != '0'
+    # FIXME
+    if: build-macos.outputs.test-splits != '0' && build-macos.outputs.test-splits != 0
     with:
       artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-macOS-x64.dmg"
       test-splits: ${{ build-macos.outputs.test-splits }}
