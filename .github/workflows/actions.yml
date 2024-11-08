@@ -43,6 +43,10 @@ jobs:
     outputs:
       params: ${{ steps.set-params.outputs.params }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: actions/set_params_output.clj
+          sparse-checkout-cone-mode: false
       - uses: DeLaGuardo/setup-clojure@12.6
         with:
           bb: 1.12.194
