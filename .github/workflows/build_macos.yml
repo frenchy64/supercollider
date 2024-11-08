@@ -47,7 +47,7 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-${{ inputs.os-version }}
+    runs-on: "macos-${{ inputs.os-version }}"
     name: macOS ${{ inputs.job-name }}
     env:
       BUILD_PATH: ${{ github.workspace }}/build
@@ -185,4 +185,5 @@ jobs:
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
-    secrets: inherit
+      os-version: ${{ inputs.os-version }}
+  ecrets: inherit
