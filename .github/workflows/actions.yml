@@ -118,7 +118,7 @@ jobs:
       run-tests: ${{ matrix.run-tests || false }}
     secrets: inherit
 
-  build-macos:
+  build-and-test-macos:
     needs: [lint, version-getter]
     uses: ./.github/workflows/build_macos.yml
     with:
@@ -142,7 +142,7 @@ jobs:
 
   # useful for branch protection rules
   valid-pull-request:
-    needs: [lint, build-and-test-linux, build-macos, test-macos, build-windows]
+    needs: [lint, build-and-test-linux, build-and-test-macos, build-windows]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -167,7 +167,7 @@ jobs:
             s3-create-latest-link: true # create link to pointing to the "latest" build
 
     if: github.repository_owner == 'supercollider' && github.event_name != 'pull_request' # run in the main repo, but not on pull requests
-    needs: [lint, version-getter, build-macros, test-macos, build-windows]
+    needs: [lint, version-getter, build-and-test-macos, build-windows]
     runs-on: ubuntu-latest
     name: 'deploy ${{ matrix.artifact-suffix }} to s3'
     env:
@@ -240,7 +240,7 @@ jobs:
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
-    needs: [lint, version-getter, build-macos, test-macos, build-windows]
+    needs: [lint, version-getter, build-and-test-macos, build-windows]
     runs-on: ubuntu-latest
     name: 'deploy release'
     env:
