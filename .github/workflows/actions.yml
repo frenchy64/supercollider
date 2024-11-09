@@ -66,13 +66,17 @@ jobs:
     needs: build-params
     steps:
       - run: echo '${{ needs.build-params.outputs.params }}'
+      - run: echo '${{ fromJSON(needs.build-params.outputs.params).linux-matrix }}'
+      - run: echo '${{ fromJSON(needs.build-params.outputs.params).linux-matrix }}'
+      - run: echo '${{ fromJSON(needs.build-params.outputs.params).linux-matrix[0] }}'
+      - run: echo '${{ fromJSON(needs.build-params.outputs.params).linux-matrix['0'] }}'
 
   build-and-test-linux:
     needs: build-params
     uses: ./.github/workflows/build_linux.yml
     with:
       params: ${{ needs.build-params.outputs.params }}
-      matrix: ${{ fromJSON(needs.build-params.outputs.params)[matrix.id] }}
+      matrix: ${{ fromJSON(needs.build-params.outputs.params).linux-matrix[matrix.id] }}
     strategy:
       fail-fast: false
       matrix:
