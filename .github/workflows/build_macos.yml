@@ -2,7 +2,7 @@ name: Build Mac OS
 on:
   workflow_call:
     inputs:
-      sc-version:
+      params:
         required: true
         type: string
       matrix:
@@ -13,6 +13,7 @@ jobs:
   build-macos:
     runs-on: macos-${{ fromJSON(inputs.matrix).os-version }}
     name: macOS ${{ fromJSON(inputs.matrix).job-name }}
+    timeout-minutes: 15
     env:
       BUILD_PATH: ${{ github.workspace }}/build
       INSTALL_PATH: ${{ github.workspace }}/build/Install
@@ -22,7 +23,7 @@ jobs:
       HOMEBREW_NO_INSTALL_CLEANUP: 1
       USE_SYSLIBS: ${{ fromJSON(inputs.matrix).use-syslibs }}
       SHARED_LIBSCSYNTH: ${{ fromJSON(inputs.matrix).shared-libscsynth }}
-      ARTIFACT_FILE: "SuperCollider-${{ inputs.sc-version }}-${{ fromJSON(inputs.matrix).artifact-suffix }}.dmg"
+      ARTIFACT_FILE: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).artifact-suffix }}.dmg"
       DEVELOPER_DIR: "/Applications/Xcode_${{ fromJSON(inputs.matrix).xcode-version }}.app/Contents/Developer"
       MACOSX_DEPLOYMENT_TARGET: "${{ fromJSON(inputs.matrix).deployment-target }}"
       CMAKE_OSX_ARCHITECTURES: "${{ fromJSON(inputs.matrix).cmake-architectures }}"
