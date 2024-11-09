@@ -59,10 +59,10 @@ jobs:
     with:
       params: ${{ needs.build-params.outputs.params }}
       matrix: ${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix[matrix.id]) }}
-    #strategy:
-    #  fail-fast: false
-    #  matrix:
-    #    include: ${{ fromJSON(needs.build-params.outputs.params).linux-matrix }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.build-params.outputs.params).linux-matrix }}
     secrets: inherit
 
   build-macos:

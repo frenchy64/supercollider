@@ -99,6 +99,5 @@ jobs:
       nsplits: ${{ fromJSON(inputs.matrix).test-splits }}
     strategy:
       matrix:
-        include:
-          this-split: ${{ fromJSON(inputs.matrix).splits-matrix }}
+        this-split: ${{ fromJSON(inputs.matrix).splits-matrix }}
     secrets: inherit
