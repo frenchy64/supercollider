@@ -36,7 +36,7 @@
     (println "Setting build params:")
     (println (json/encode params {:pretty true}))
     (spit (or (System/getenv "GITHUB_OUTPUT") (throw (ex-info "Must set $GITHUB_OUTPUT")))
-          (str "params='" (json/encode params) "'\n")
+          (str "params=" (json/encode params) "\n")
           :append true)))
 
 (when (= *file* (System/getProperty "babashka.file"))
