@@ -7,7 +7,8 @@
 ;; params={"sc-version":"12345", ...etc...}
 
 (ns actions.set-params-output
-  (:require [cheshire.core :as json]))
+  (:require [clojure.string :as str]
+            [cheshire.core :as json]))
 
 ;; number of jobs to split unit tests for each platform
 (def default-test-splits 4)
@@ -108,12 +109,14 @@
                      expand-splits)})
 
 (defn -main []
-  (let [params (all-params)]
-    (println "Setting build params:")
-    (println (json/encode params {:pretty true}))
-    (spit (getenv "GITHUB_OUTPUT")
-          (str "params=" (json/encode params) "\n")
-          :append true)))
+  (let [params (all-params)
+        s (str/trim (json/encode params {:pretty true}))
+        delim "EOF"
+        _ (assert (not (str/includes? s delim)))
+        params-setter (str "params=<<" delim "\n" s "\n" delim "\n")]
+    (print params-setter)
+    (flush)
+    (spit (getenv "GITHUB_OUTPUT") params-setter :append true)))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))
