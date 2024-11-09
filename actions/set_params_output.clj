@@ -40,7 +40,9 @@
                            [9 11 12 13 14])
                      (into (map #(do {:os-version (if (<= % 11) "22.04" "24.04")
                                       :c-compiler (str "clang-" %)
-                                      :cxx-compiler (str "clang++-" %)}))
+                                      :cxx-compiler (str "clang++-" %)
+                                      :use-syslibs false
+                                      :shared-libscsynth false}))
                            [11 15 16 17 18])
                      index-matrix
                      expand-splits)
