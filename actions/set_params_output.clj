@@ -7,7 +7,14 @@
 (ns actions.set-params-output
   (:require [cheshire.core :as json]))
 
+;; number of jobs to split unit tests for each platform
+(def default-test-splits 4)
+
 (defn index-matrix [v] (into [] (map-indexed #(assoc %2 :id %1)) v))
+(defn expand-splits [v] (into [] (map #(cond-> %
+                                         (:run-tests %) (assoc :splits-matrix (range default-test-splits)
+                                                               :test-splits default-test-splits)))
+                              v))
 
 (defn all-params []
   {:sc-version (or (System/getenv "SC_VERSION") (throw (ex-info "Must set $SC_VERSION" {})))
@@ -27,7 +34,8 @@
                                       :c-compiler (str "clang-" %)
                                       :cxx-compiler (str "clang++-" %)}))
                            [11 15 16 17 18])
-                     index-matrix)
+                     index-matrix
+                     expand-splits)
    :macos-matrix (-> [{:job-name "arm64"
                        :os-version "15"
                        :xcode-version "16.0"
@@ -39,7 +47,8 @@
                        :vcpkg-packages ""
                        :vcpkg-triplet ""
                        :extra-cmake-flags "" ; "-D SC_VERIFY_APP=ON" # verify app doesn't seem to work with official qt6
-                       :artifact-suffix "macOS-arm64"}
+                       :artifact-suffix "macOS-arm64"
+                       :run-tests true}
                       {:job-name "x64"
                        :os-version "13"
                        :xcode-version "15.2"
@@ -51,7 +60,8 @@
                        :vcpkg-packages ""
                        :vcpkg-triplet ""
                        :extra-cmake-flags "" ; -D SC_VERIFY_APP=ON # verify app doesn't seem to work with official qt6
-                       :artifact-suffix "macOS-x64"}
+                       :artifact-suffix "macOS-x64"
+                       :run-tests true}
                       {:job-name "x64 legacy"
                        :os-version "13"
                        :xcode-version "14.1"
@@ -67,7 +77,8 @@
                        :vcpkg-triplet "x64-osx-release-supercollider" ; required for build-libsndfile
                        :extra-cmake-flags ""
                        ; set if needed - will trigger artifact upload
-                       :artifact-suffix "macOS-x64-legacy"}]
+                       :artifact-suffix "macOS-x64-legacy"
+                       :run-tests true}]
                      (into (map #(into {:os-version "13"
                                         :xcode-version "15.2"
                                         :deployment-target ""
@@ -82,7 +93,9 @@
                              :extra-cmake-flags "-D SYSTEM_BOOST=ON -D SYSTEM_YAMLCPP=ON"}
                             {:job-name "x64 shared libscsynth"
                              :homebrew-packages "qt@6 libsndfile readline fftw portaudio"
-                             :extra-cmake-flags "-D LIBSCSYNTH=ON"}]))})
+                             :extra-cmake-flags "-D LIBSCSYNTH=ON"}])
+                     index-matrix
+                     expand-splits)})
 
 (defn -main []
   (let [params (all-params)]

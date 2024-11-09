@@ -144,3 +144,11 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_FILE }}
           path: ${{ env.INSTALL_PATH }}/${{ env.ARTIFACT_FILE }}
+  test-macos:
+    if: fromJSON(inputs.matrix).run-tests
+    needs: build-macos
+    uses: ./.github/workflows/test_macos.yml
+    with:
+      artifact-file: "SuperCollider-${{ fromJSON(needs.build-params.outputs.params).sc-version }}-macOS-x64.dmg"
+      os-version: '${{ fromJSON(inputs.matrix).os-version }}'
+    secrets: inherit

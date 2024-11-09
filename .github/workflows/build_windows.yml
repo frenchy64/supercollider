@@ -23,7 +23,7 @@ jobs:
             fftw-url: "ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll32.zip"
             cmake-generator: "Visual Studio 16 2019"
             vcvars-script-path: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars32.bat"
-            vcpkg-triplet: x86-windows-release
+            vcpkg-triplet: "x86-windows-release"
             use-qtwebengine: "ON" # might need to be turned off for MinGW
             qt-modules: "qtwebengine"
             # artifact-suffix: "win32" # set if needed - will trigger artifact upload
@@ -39,7 +39,7 @@ jobs:
             fftw-url: "ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll64.zip"
             cmake-generator: "Visual Studio 17 2022"
             vcvars-script-path: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-            vcpkg-triplet: x64-windows-release
+            vcpkg-triplet: "x64-windows-release"
             use-qtwebengine: "ON" # might need to be turned off for MinGW
             qt-modules: 'qtwebengine qtwebchannel qtwebsockets qtpositioning'
             artifact-suffix: "win64" # set if needed - will trigger artifact upload
@@ -55,7 +55,7 @@ jobs:
             fftw-url: "ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll64.zip"
             cmake-generator: "Visual Studio 16 2019"
             vcvars-script-path: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-            vcpkg-triplet: x64-windows-release
+            vcpkg-triplet: "x64-windows-release"
             use-qtwebengine: "ON" # might need to be turned off for MinGW
             qt-modules: 'qtwebengine qtwebchannel qtwebsockets qtpositioning'
 

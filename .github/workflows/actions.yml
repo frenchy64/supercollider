@@ -94,12 +94,6 @@ jobs:
 
 
 
-  test-macos:
-    needs: [build-params, build-macos]
-    uses: ./.github/workflows/test_macos.yml
-    with:
-      artifact-file: "SuperCollider-${{ fromJSON(needs.build-params.outputs.params).sc-version }}-macOS-x64.dmg"
-    secrets: inherit
 
   # test-windows:
   #   needs: [build-params, build-windows]
