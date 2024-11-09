@@ -10,10 +10,10 @@ on:
         type: string
       this-split:
         required: true
-        type: integer
+        type: number
       nsplits:
         required: true
-        type: integer
+        type: number
 
 jobs:
   test-linux:
