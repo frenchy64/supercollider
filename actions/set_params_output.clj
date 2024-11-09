@@ -2,9 +2,19 @@
 ;; Run locally:
 ;; $ GITHUB_OUTPUT=ghoutput GITHUB_REF=refs/tags/v1.2.3 GITHUB_SHA=12345 ./actions/set_params_output.clj
 ;; $ cat ghoutput
-;; params={"sc-version":"v1.2.3", ...etc...}
+;; params<<EOF
+;; {
+;;   "sc-version" : "v1.2.3",
+;; ...
+;; }
+;; EOF
 ;; $ GITHUB_OUTPUT=ghoutput GITHUB_REF=develop GITHUB_SHA=12345 ./actions/set_params_output.clj
-;; params={"sc-version":"12345", ...etc...}
+;; params<<EOF
+;; {
+;;   "sc-version" : "12345",
+;; ...
+;; }
+;; EOF
 
 (ns actions.set-params-output
   (:require [clojure.string :as str]
@@ -115,7 +125,7 @@
         s (str/trim (json/encode params {:pretty true}))
         delim "EOF"
         _ (assert (not (str/includes? s delim)))
-        params-setter (str "params=<<" delim "\n" s "\n" delim "\n")]
+        params-setter (str "params<<" delim "\n" s "\n" delim "\n")]
     (print params-setter)
     (flush)
     (spit (getenv "GITHUB_OUTPUT") params-setter :append true)))
