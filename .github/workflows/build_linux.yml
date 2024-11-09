@@ -11,17 +11,17 @@ on:
 
 jobs:
   build-linux:
-    runs-on: "ubuntu-${{ toJSON(inputs.matrix).os-version }}"
-    name: Ubuntu ${{ toJSON(inputs.matrix).os-version }} ${{ toJSON(inputs.matrix).c-compiler }} ${{ toJSON(inputs.matrix).job-name }}
+    runs-on: "ubuntu-${{ fromJSON(inputs.matrix).os-version }}"
+    name: Ubuntu ${{ fromJSON(inputs.matrix).os-version }} ${{ fromJSON(inputs.matrix).c-compiler }} ${{ fromJSON(inputs.matrix).job-name }}
     timeout-minutes: 15
     env:
       BUILD_PATH: ${{ github.workspace }}/build
       INSTALL_PATH: ${{ github.workspace }}/build/Install
-      USE_SYSLIBS: ${{ toJSON(inputs.matrix).use-syslibs }}
-      SHARED_LIBSCSYNTH: ${{ toJSON(inputs.matrix).shared-libscsynth }}
-      CC: ${{ toJSON(inputs.matrix).c-compiler }}
-      CXX: ${{ toJSON(inputs.matrix).cxx-compiler }}
-      ARTIFACT_FILE: "SuperCollider-${{ toJSON(inputs.params).sc-version }}-${{ toJSON(inputs.matrix).os-version }}-${{ toJSON(inputs.matrix).c-compiler }}"
+      USE_SYSLIBS: ${{ fromJSON(inputs.matrix).use-syslibs }}
+      SHARED_LIBSCSYNTH: ${{ fromJSON(inputs.matrix).shared-libscsynth }}
+      CC: ${{ fromJSON(inputs.matrix).c-compiler }}
+      CXX: ${{ fromJSON(inputs.matrix).cxx-compiler }}
+      ARTIFACT_FILE: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"
 
     steps:
       - uses: actions/checkout@v4
@@ -38,8 +38,8 @@ jobs:
           path: |
             ~/.ccache
             ~/.cache/ccache
-          key: ${{ runner.os }}-${{ toJSON(inputs.matrix).os-version }}-${{ toJSON(inputs.matrix).c-compiler }}-${{ toJSON(inputs.matrix).use-syslibs }}-${{ toJSON(inputs.matrix).shared-libscsynth }}-${{ steps.current-date.outputs.stamp }}
-          restore-keys: ${{ runner.os }}-${{ toJSON(inputs.matrix).os-version }}-${{ toJSON(inputs.matrix).c-compiler }}-${{ toJSON(inputs.matrix).use-syslibs }}-${{ toJSON(inputs.matrix).shared-libscsynth }}-
+          key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ fromJSON(inputs.matrix).use-syslibs }}-${{ fromJSON(inputs.matrix).shared-libscsynth }}-${{ steps.current-date.outputs.stamp }}
+          restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ fromJSON(inputs.matrix).use-syslibs }}-${{ fromJSON(inputs.matrix).shared-libscsynth }}-
 
       - name: install dependencies
         run: |
@@ -78,21 +78,21 @@ jobs:
           make install -j2
 
       - name: create archive
-        if: toJSON(inputs.matrix).run-tests
+        if: fromJSON(inputs.matrix).run-tests
         run: cd $INSTALL_PATH && zip --symlinks -r $ARTIFACT_FILE.zip .
 
       - name: upload artifacts
         uses: actions/upload-artifact@v4
-        if: toJSON(inputs.matrix).run-tests
+        if: fromJSON(inputs.matrix).run-tests
         with:
           name: ${{ env.ARTIFACT_FILE }}
           path: ${{ env.INSTALL_PATH }}/${{ env.ARTIFACT_FILE }}.zip
 
   test-linux:
-    if: toJSON(inputs.matrix).run-tests
+    if: fromJSON(inputs.matrix).run-tests
     needs: build-linux
     uses: ./.github/workflows/test_linux.yml
     with:
-      artifact-file: "SuperCollider-${{ toJSON(inputs.params).sc-version }}-${{ toJSON(inputs.matrix).os-version }}-${{ toJSON(inputs.matrix).c-compiler }}"
-      os-version: '${{ toJSON(inputs.matrix).os-version }}'
+      artifact-file: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"
+      os-version: '${{ fromJSON(inputs.matrix).os-version }}'
     secrets: inherit
