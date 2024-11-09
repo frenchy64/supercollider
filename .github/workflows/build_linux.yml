@@ -38,8 +38,8 @@ jobs:
           path: |
             ~/.ccache
             ~/.cache/ccache
-          key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ fromJSON(inputs.matrix).use-syslibs }}-${{ fromJSON(inputs.matrix).shared-libscsynth }}-${{ steps.current-date.outputs.stamp }}
-          restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ fromJSON(inputs.matrix).use-syslibs }}-${{ fromJSON(inputs.matrix).shared-libscsynth }}-
+          key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-${{ steps.current-date.outputs.stamp }}
+          restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-
 
       - name: install dependencies
         run: |
@@ -93,7 +93,7 @@ jobs:
     needs: build-linux
     uses: ./.github/workflows/test_linux.yml
     with:
-      artifact-file: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"
+      artifact-file: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ env.CC }}"
       os-version: ${{ fromJSON(inputs.matrix).os-version }}
       this-split: ${{ matrix.this-split }}
       nsplits: ${{ fromJSON(inputs.matrix).test-splits }}
