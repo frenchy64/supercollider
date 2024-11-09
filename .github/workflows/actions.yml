@@ -64,6 +64,10 @@ jobs:
   debug:
     runs-on: ubuntu-22.04
     needs: build-params
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.build-params.outputs.params).linux-matrix }}
     steps:
       - run: echo '${{ needs.build-params.outputs.params }}'
       - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params)) }}'
