@@ -14,7 +14,9 @@
 (def default-test-splits 4)
 
 (defn getenv [s] (or (System/getenv s) (throw (ex-info (str "Must set $" s) {}))))
+;; add an :id field in order to perform some acrobatics (look for matrix.id in .github/workflows/actions.yml)
 (defn index-matrix [v] (into [] (map-indexed #(assoc %2 :id %1)) v))
+;; if :run-tests true then add the fields to split tests
 (defn expand-splits [v] (into [] (map #(cond-> %
                                          (:run-tests %) (assoc :splits-matrix (range default-test-splits)
                                                                :test-splits default-test-splits)))
