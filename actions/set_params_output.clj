@@ -1,8 +1,10 @@
 #!/usr/bin/env bb
 ;; Run locally:
-;; $ GITHUB_OUTPUT=ghoutput SC_VERSION=1 ./actions/set_params_output.clj
+;; $ GITHUB_OUTPUT=ghoutput GITHUB_REF=refs/tags/v1.2.3 GITHUB_SHA=12345 ./actions/set_params_output.clj
 ;; $ cat ghoutput
-;; params={"sc-version":"1", ...etc...}
+;; params={"sc-version":"v1.2.3", ...etc...}
+;; $ GITHUB_OUTPUT=ghoutput GITHUB_REF=develop GITHUB_SHA=12345 ./actions/set_params_output.clj
+;; params={"sc-version":"12345", ...etc...}
 
 (ns actions.set-params-output
   (:require [cheshire.core :as json]))
@@ -10,14 +12,20 @@
 ;; number of jobs to split unit tests for each platform
 (def default-test-splits 4)
 
+(defn getenv [s] (or (System/getenv s) (throw (ex-info (str "Must set $" s) {}))))
 (defn index-matrix [v] (into [] (map-indexed #(assoc %2 :id %1)) v))
 (defn expand-splits [v] (into [] (map #(cond-> %
                                          (:run-tests %) (assoc :splits-matrix (range default-test-splits)
                                                                :test-splits default-test-splits)))
                               v))
 
+(defn sc-version []
+  (if-some [[_ tag] (re-matches #"refs/tags/(.*)" (getenv "GITHUB_REF"))]
+    tag
+    (getenv "GITHUB_SHA")))
+
 (defn all-params []
-  {:sc-version (or (System/getenv "SC_VERSION") (throw (ex-info "Must set $SC_VERSION" {})))
+  {:sc-version (sc-version)
    :linux-matrix (-> []
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
                                         :c-compiler (str "gcc-" %)
@@ -101,7 +109,7 @@
   (let [params (all-params)]
     (println "Setting build params:")
     (println (json/encode params {:pretty true}))
-    (spit (or (System/getenv "GITHUB_OUTPUT") (throw (ex-info "Must set $GITHUB_OUTPUT")))
+    (spit (getenv "GITHUB_OUTPUT")
           (str "params=" (json/encode params) "\n")
           :append true)))
 

@@ -50,16 +50,8 @@ jobs:
       - uses: DeLaGuardo/setup-clojure@12.6
         with:
           bb: 1.12.194
-      - name: set version string for artifacts
-        id: set-params
-        run: |
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            FULL_TAG=${GITHUB_REF#refs/tags/}
-            export SC_VERSION=${FULL_TAG##Version-}
-          else
-            export SC_VERSION=$GITHUB_SHA
-          fi
-          ./actions/set_params_output.clj
+      - id: set-params
+        run: ./actions/set_params_output.clj
 
   build-and-test-linux:
     needs: build-params
