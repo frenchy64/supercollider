@@ -29,13 +29,13 @@
    :linux-matrix (-> []
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
                                         :c-compiler (str "gcc-" %)
-                                        :cxx-compiler (str "g++-" %)}
+                                        :cxx-compiler (str "g++-" %)
+                                        :shared-libsynth (= % 13)
+                                        :shared-libscsynth (= % 14)}
                                        (case %
                                          12 {:run-tests true}
-                                         13 {:job-name "use system libraries"
-                                             :use-syslibs true}
-                                         14 {:job-name "shared libscsynth"
-                                             :shared-libscsynth true}
+                                         13 {:job-name "use system libraries"}
+                                         14 {:job-name "shared libscsynth"}
                                          {})))
                            [9 11 12 13 14])
                      (into (map #(do {:os-version (if (<= % 11) "22.04" "24.04")
