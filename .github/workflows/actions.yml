@@ -82,7 +82,7 @@ jobs:
     uses: ./.github/workflows/build_linux.yml
     with:
       params: ${{ needs.build-params.outputs.params }}
-      matrix: ${{ fromJSON(needs.build-params.outputs.params).linux-matrix[matrix.id] }}
+      matrix: ${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix[matrix.id]) }}
     strategy:
       fail-fast: false
       matrix:
