@@ -61,22 +61,6 @@ jobs:
           fi
           ./actions/set_params_output.clj
 
-  debug:
-    runs-on: ubuntu-22.04
-    needs: build-params
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.build-params.outputs.params).linux-matrix }}
-    steps:
-      - run: echo '${{ needs.build-params.outputs.params }}'
-      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params)) }}'
-      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params)['linux-matrix']) }}'
-      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix) }}'
-      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix) }}'
-      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix[0]) }}'
-      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix['0']) }}'
-
   build-and-test-linux:
     needs: build-params
     uses: ./.github/workflows/build_linux.yml
