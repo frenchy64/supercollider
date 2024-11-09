@@ -2,8 +2,7 @@
 ;; Run locally:
 ;; $ GITHUB_OUTPUT=ghoutput SC_VERSION=1 ./actions/set_params_output.clj
 ;; $ cat ghoutput
-;; params='{"sc-version":"1", ...etc...}'
-;; $
+;; params={"sc-version":"1", ...etc...}
 
 (ns actions.set-params-output
   (:require [cheshire.core :as json]))
@@ -11,7 +10,6 @@
 (defn index-matrix [v] (into [] (map-indexed #(assoc %2 :id %1)) v))
 
 (defn all-params []
-  (println "[debug] SC_VERSION: " (pr-str (System/getenv "SC_VERSION")))
   {:sc-version (or (System/getenv "SC_VERSION") (throw (ex-info "Must set $SC_VERSION" {})))
    :linux-matrix (-> []
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
@@ -40,7 +38,7 @@
                        :homebrew-packages "libsndfile readline fftw portaudio"
                        :vcpkg-packages ""
                        :vcpkg-triplet ""
-                       :extra-cmake-flags "" ; -D SC_VERIFY_APP=ON # verify app doesn't seem to work with official qt6
+                       :extra-cmake-flags "" ; "-D SC_VERIFY_APP=ON" # verify app doesn't seem to work with official qt6
                        :artifact-suffix "macOS-arm64"}
                       {:job-name "x64"
                        :os-version "13"
@@ -57,37 +55,34 @@
                       {:job-name "x64 legacy"
                        :os-version "13"
                        :xcode-version "14.1"
-                       :qt-version "5.15.2" # will use qt from aqtinstall
-                       :qt-modules 'qtwebengine'
+                       :qt-version "5.15.2" ; will use qt from aqtinstall
+                       :qt-modules "qtwebengine"
                        :deployment-target "10.15"
-                       :cmake-architectures x86_64
+                       :cmake-architectures "x86_64"
                        :homebrew-packages "readline portaudio"
                        :vcpkg-packages "libsndfile fftw3"
-                       :homebrew-packages "" ; use this instead when cross-compiling for x86_64 on arm64
-                       :homebrew-uninstall "readline" ; use this instead when cross-compiling for x86_64 on arm64
-                       :vcpkg-packages "readline portaudio libsndfile fftw3" ; use this instead when cross-compiling for x86_64 on arm64
+                       ;:homebrew-packages "" ; use this instead when cross-compiling for x86_64 on arm64
+                       ;:homebrew-uninstall "readline" ; use this instead when cross-compiling for x86_64 on arm64
+                       ;:vcpkg-packages "readline portaudio libsndfile fftw3" ; use this instead when cross-compiling for x86_64 on arm64
                        :vcpkg-triplet "x64-osx-release-supercollider" ; required for build-libsndfile
                        :extra-cmake-flags ""
                        ; set if needed - will trigger artifact upload
-                       :artifact-suffix "macOS-x64-legacy"}
-                      {:job-name "x64 use system libraries"
-                       :os-version "13"
-                       :xcode-version "15.2"
-                       :deployment-target ""
-                       :cmake-architectures "x86_64"
-                       :homebrew-packages "qt@6 libsndfile readline fftw portaudio yaml-cpp boost"
-                       :vcpkg-packages ""
-                       :vcpkg-triplet ""
-                       :extra-cmake-flags "-D SYSTEM_BOOST=ON -D SYSTEM_YAMLCPP=ON"}
-                      {:job-name "x64 shared libscsynth"
-                       :os-version "13"
-                       :xcode-version "15.2"
-                       :deployment-target ""
-                       :cmake-architectures "x86_64"
-                       :homebrew-packages "qt@6 libsndfile readline fftw portaudio"
-                       :vcpkg-packages ""
-                       :vcpkg-triplet ""
-                       :extra-cmake-flags "-D LIBSCSYNTH=ON"}])})
+                       :artifact-suffix "macOS-x64-legacy"}]
+                     (into (map #(into {:os-version "13"
+                                        :xcode-version "15.2"
+                                        :deployment-target ""
+                                        :cmake-architectures "x86_64"
+                                        :homebrew-packages "qt@6 libsndfile readline fftw portaudio"
+                                        :vcpkg-packages ""
+                                        :vcpkg-triplet ""
+                                        :extra-cmake-flags "-D LIBSCSYNTH=ON"}
+                                       %))
+                           [{:job-name "x64 use system libraries"
+                             :homebrew-packages "qt@6 libsndfile readline fftw portaudio yaml-cpp boost"
+                             :extra-cmake-flags "-D SYSTEM_BOOST=ON -D SYSTEM_YAMLCPP=ON"}
+                            {:job-name "x64 shared libscsynth"
+                             :homebrew-packages "qt@6 libsndfile readline fftw portaudio"
+                             :extra-cmake-flags "-D LIBSCSYNTH=ON"}]))})
 
 (defn -main []
   (let [params (all-params)]
@@ -98,5 +93,4 @@
           :append true)))
 
 (when (= *file* (System/getProperty "babashka.file"))
-  (println "[debug] *command-line-args*:" (pr-str *command-line-args*))
   (apply -main *command-line-args*))
