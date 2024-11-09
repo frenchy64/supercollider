@@ -11,6 +11,7 @@
 (defn index-matrix [v] (into [] (map-indexed #(assoc %2 :id %1)) v))
 
 (defn all-params []
+  (println "[debug] SC_VERSION: " (pr-str (System/getenv "SC_VERSION")))
   {:sc-version (or (System/getenv "SC_VERSION") (throw (ex-info "Must set $SC_VERSION" {})))
    :linux-matrix (-> []
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
