@@ -65,9 +65,10 @@ jobs:
     needs: build-params
     uses: ./.github/workflows/build_linux.yml
     with:
-      params: ${{ toJSON(needs.build-params.outputs.params) }}
-      matrix: ${{ matrix.json-matrix }}
+      params: ${{ needs.build-params.outputs.params }}
+      matrix: ${{ toJSON(needs.build-params.outputs.params)[matrix.id] }}
     strategy:
+      fail-fast: false
       matrix:
         include: ${{ toJSON(needs.build-params.outputs.params).linux-matrix }}
     secrets: inherit

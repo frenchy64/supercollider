@@ -8,7 +8,7 @@
 (ns actions.set-params-output
   (:require [cheshire.core :as json]))
 
-(defn add-json-matrix [v] (mapv #(assoc % :json-matrix (json/encode %)) v))
+(defn index-matrix [v] (into [] (map-indexed #(assoc %2 :id %1)) v))
 
 (defn all-params []
   {:sc-version (or (System/getenv "SC_VERSION") (throw (ex-info "Must set $SC_VERSION" {})))
@@ -28,7 +28,7 @@
                                       :c-compiler (str "clang-" %)
                                       :cxx-compiler (str "clang++-" %)}))
                            [11 15 16 17 18])
-                     add-json-matrix)
+                     index-matrix)
    :macos-matrix []})
 
 (defn -main []
