@@ -86,7 +86,7 @@ jobs:
     secrets: inherit
 
   build-windows:
-    needs: [build-params]
+    needs: build-params
     uses: ./.github/workflows/build_windows.yml
     with:
       sc-version: ${{ fromJSON(needs.build-params.outputs.params).sc-version }}
