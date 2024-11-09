@@ -98,4 +98,5 @@
           :append true)))
 
 (when (= *file* (System/getProperty "babashka.file"))
+  (println "[debug] *command-line-args*:" (pr-str *command-line-args*))
   (apply -main *command-line-args*))
