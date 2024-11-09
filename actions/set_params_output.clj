@@ -123,10 +123,9 @@
 (defn -main []
   (let [params (all-params)
         s (str/trim (json/encode params {:pretty true}))
-        delim (if (str/includes? s "EOF")
-                (str (random-uuid))
-                "EOF")
+        delim (if (str/includes? s "EOF") (str (random-uuid)) "EOF")
         _ (assert (not (str/includes? s delim)))
+        ;; https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#multiline-strings
         params-setter (str "params<<" delim "\n" s "\n" delim "\n")]
     (print params-setter)
     (flush)
