@@ -123,7 +123,9 @@
 (defn -main []
   (let [params (all-params)
         s (str/trim (json/encode params {:pretty true}))
-        delim "EOF"
+        delim (if (str/includes? s "EOF")
+                (str (random-uuid))
+                "EOF")
         _ (assert (not (str/includes? s delim)))
         params-setter (str "params<<" delim "\n" s "\n" delim "\n")]
     (print params-setter)
