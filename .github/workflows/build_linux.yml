@@ -12,8 +12,8 @@ on:
 jobs:
   build-linux:
     runs-on: "ubuntu-${{ fromJSON(inputs.matrix).os-version }}"
-    name: Ubuntu ${{ fromJSON(inputs.matrix).os-version }} ${{ fromJSON(inputs.matrix).c-compiler }} ${{ fromJSON(inputs.matrix).job-name }}
     timeout-minutes: 15
+    name: Ubuntu ${{ fromJSON(inputs.matrix).os-version }} ${{ fromJSON(inputs.matrix).c-compiler }} ${{ fromJSON(inputs.matrix).job-name }}
     env:
       BUILD_PATH: ${{ github.workspace }}/build
       INSTALL_PATH: ${{ github.workspace }}/build/Install

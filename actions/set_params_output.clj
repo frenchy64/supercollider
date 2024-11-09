@@ -30,7 +30,7 @@
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
                                         :c-compiler (str "gcc-" %)
                                         :cxx-compiler (str "g++-" %)
-                                        :shared-libsynth (= % 13)
+                                        :use-syslibs (= % 13)
                                         :shared-libscsynth (= % 14)}
                                        (case %
                                          12 {:run-tests true}
