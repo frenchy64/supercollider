@@ -93,7 +93,7 @@ jobs:
     needs: build-linux
     uses: ./.github/workflows/test_linux.yml
     with:
-      artifact-file: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ env.CC }}"
+      artifact-file: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"
       os-version: ${{ fromJSON(inputs.matrix).os-version }}
       this-split: ${{ matrix.this-split }}
       nsplits: ${{ fromJSON(inputs.matrix).test-splits }}
