@@ -66,7 +66,8 @@ jobs:
     needs: build-params
     steps:
       - run: echo '${{ needs.build-params.outputs.params }}'
-      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix) }}'
+      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params)) }}'
+      - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params)['linux-matrix']) }}'
       - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix) }}'
       - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix) }}'
       - run: echo '${{ toJSON(fromJSON(needs.build-params.outputs.params).linux-matrix[0]) }}'
