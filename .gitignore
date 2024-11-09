@@ -38,3 +38,6 @@ __pycache__
 
 # vs code files
 .vscode
+
+# testing files for actions/set_params_output.clj
+/ghoutput

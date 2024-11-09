@@ -1,6 +1,6 @@
 #!/usr/bin/env bb
 ;; Run locally:
-;; $ GITHUB_OUTPUT=ghoutput SC_VERSION=1 ./actions/build_params.clj
+;; $ GITHUB_OUTPUT=ghoutput SC_VERSION=1 ./actions/set_params_output.clj
 ;; $ cat ghoutput
 ;; params='{"sc-version":"1", ...etc...}'
 ;; $

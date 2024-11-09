@@ -69,7 +69,7 @@ jobs:
       matrix: ${{ matrix.json-matrix }}
     strategy:
       matrix:
-        includes: ${{ toJSON(needs.build-params.outputs.params).linux-matrix }}
+        include: ${{ toJSON(needs.build-params.outputs.params).linux-matrix }}
     secrets: inherit
 
   build-macos:
