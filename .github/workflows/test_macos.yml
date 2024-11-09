@@ -8,6 +8,12 @@ on:
       os-version:
         required: true
         type: string
+      this-split:
+        required: true
+        type: number
+      nsplits:
+        required: true
+        type: number
 
 jobs:
   test-macos:
@@ -59,7 +65,7 @@ jobs:
           # add path
           $SCLANG $SCRIPT_ADD_PATH $TESTS_PATH
           # run tests
-          timeout 1200 $SCLANG $SCRIPT_RUN_TESTS $TEST_LIST_PROTO $TEST_LIST_RESULT
+          timeout 1200 $SCLANG $SCRIPT_RUN_TESTS $TEST_LIST_PROTO $TEST_LIST_RESULT ${{ inputs.this-split }} ${{ inputs.nsplits }}
 
       - name: Post test results
         shell: bash

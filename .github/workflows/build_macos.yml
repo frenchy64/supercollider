@@ -150,5 +150,10 @@ jobs:
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ fromJSON(needs.build-params.outputs.params).sc-version }}-macOS-x64.dmg"
-      os-version: '${{ fromJSON(inputs.matrix).os-version }}'
+      os-version: ${{ fromJSON(inputs.matrix).os-version }}
+      this-split: ${{ matrix.this-split }}
+      nsplits: ${{ fromJSON(inputs.matrix).test-splits }}
+    strategy:
+      matrix:
+        this-split: ${{ fromJSON(inputs.matrix).splits-matrix }}
     secrets: inherit
