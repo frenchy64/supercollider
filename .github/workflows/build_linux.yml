@@ -41,7 +41,6 @@ jobs:
           key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-${{ steps.current-date.outputs.stamp }}
           restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-
 
-
       - id: packages
         run: |
           PACKAGES='build-essential cmake pkg-config libjack-jackd2-dev libsndfile1-dev libasound2-dev libavahi-client-dev libreadline6-dev libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache'
@@ -54,7 +53,8 @@ jobs:
           fi
           # install system libraries
           if [[ "$USE_SYSLIBS" == true ]]; then
-          PACKAGES="$PACKAGES libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev"
+            PACKAGES="$PACKAGES libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev"
+          fi
           # install qt from apt
           PACKAGES="$PACKAGES qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools qt6-declarative-dev libqt6gui6 libqt6printsupport6 libqt6svgwidgets6 libqt6websockets6-dev libqt6webenginecore6 qt6-webengine-dev qt6-webengine-dev-tools libqt6webchannel6-dev libqt6opengl6-dev libqt6svg6-dev linguist-qt6 qt6-l10n-tools  libglx-dev libgl1-mesa-dev libvulkan-dev libxkbcommon-dev libxcb-xkb-dev"
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
