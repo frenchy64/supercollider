@@ -90,7 +90,7 @@ jobs:
           vcpkg install ${{ fromJSON(inputs.matrix).vcpkg-packages }} --triplet="${{ fromJSON(inputs.matrix).vcpkg-triplet }}" --overlay-triplets="$GITHUB_WORKSPACE/vcpkg/triplets"
 
       - name: install qt using aqtinstall
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         if: fromJSON(inputs.matrix).qt-version
         env:
           DEVELOPER_DIR: "" # remove developer dir which causes installation to fail
@@ -146,6 +146,7 @@ jobs:
       this-split: ${{ matrix.this-split }}
       nsplits: ${{ fromJSON(inputs.matrix).test-splits }}
     strategy:
+      fail-fast: false
       matrix:
         this-split: ${{ fromJSON(inputs.matrix).splits-matrix }}
     secrets: inherit
