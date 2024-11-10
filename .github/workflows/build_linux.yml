@@ -44,7 +44,7 @@ jobs:
 
       - id: packages
         run: |
-          PACKAGES='build-essential cmake pkg-config libjack-jackd2-dev libsndfile1-dev libasound2-dev libavahi-client-dev libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache'
+          PACKAGES='build-essential cmake pkg-config libjack-jackd2-dev libsndfile1-dev libasound2-dev libavahi-client-dev libncurses-dev libreadline8 readline-doc libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache'
           # install appropriate clang/gcc compilers
           if [[ "$CC" =~ clang-[1-9] ]]; then
             PACKAGES="$PACKAGES $CC" # package names are clang-X
