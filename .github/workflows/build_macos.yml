@@ -31,6 +31,7 @@ jobs:
       BREW_UNIVERSAL_WORKDIR: ${{ github.workspace }}/brew-universal
       SKIP_SIGNING: 1 # for brew-install-universal
     steps:
+      - run: git config --global fetch.parallel 0
       - uses: actions/checkout@v4
         with:
           submodules: recursive
