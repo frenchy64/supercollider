@@ -18,11 +18,11 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-22.04
-
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - run: git fetch --recurse-submodules -j${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
 
       - name: lint class library
         run: |

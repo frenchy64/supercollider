@@ -76,13 +76,14 @@ jobs:
       BUILD_PATH: ${{ github.workspace }}/build
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       LIBS_DOWNLOAD_PATH: ${{ github.workspace }}/../3rd-party
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
       FFTW_INSTALL_DIR: "C:/Program Files/fftw"
       ARTIFACT_FILE: "SuperCollider-${{ inputs.sc-version }}-${{ matrix.artifact-suffix }}"
       INSTALLER_FILE: "SuperCollider-${{ inputs.sc-version }}-${{ matrix.installer-suffix }}"
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - shell: bash
+        run: git fetch --recurse-submodules -j${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
 
       - name: prepare timestamp for cache
         id: current-date
@@ -171,7 +172,7 @@ jobs:
       - name: build
         shell: bash
         run: |
-          cmake --build $BUILD_PATH --config Release --target install --parallel 4
+          cmake --build $BUILD_PATH --config Release --target install
 
       - name: create archive
         if: matrix.artifact-suffix
