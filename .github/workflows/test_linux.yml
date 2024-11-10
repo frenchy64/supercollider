@@ -48,12 +48,14 @@ jobs:
           ls
           unzip $ARTIFACT_FILE.zip
 
+      - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
+        with:
+          tools: libsndfile1 libavahi-client-dev libfftw3-dev libicu-dev libudev-dev qt6-base-dev libqt6svg6-dev qt6-webengine-dev libqt6webenginecore6-bin jackd1 socat
+          cache: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}
+          method: timestamp
+
       - name: Setup environment
         run: |
-          # install dependencies
-          sudo apt-get update
-          sudo apt-get install --yes libsndfile1 libavahi-client-dev libfftw3-dev libicu-dev libudev-dev qt6-base-dev libqt6svg6-dev qt6-webengine-dev libqt6webenginecore6-bin jackd1 socat
-
           # add bin to PATH so that scsynth can be found
           echo "$INSTALL_PATH/bin" >> $GITHUB_PATH
 
