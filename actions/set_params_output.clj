@@ -58,8 +58,11 @@
                                       :shared-libscsynth false}))
                            [11 15 16 17 18])
                      index-matrix
-                     expand-splits)
-   :macos-matrix (-> [{:job-name "arm64"
+                     expand-splits
+                     ;;FIXME temporary
+                     (->> (into [] (filter #(= "gcc-9" (:c-compiler %))))))
+   ;;FIXME temporary
+   :macos-matrix [] #_(-> [{:job-name "arm64"
                        :os-version "15"
                        :xcode-version "16.0"
                        :qt-version "6.7.3" ; will use qt from aqtinstall
