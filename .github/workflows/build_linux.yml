@@ -64,6 +64,7 @@ jobs:
       - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
         with:
           tools: ${{ steps.packages.outputs.packages }}
+          key: ${{ github.event_name != 'pull_request' && steps.current-date.outputs.stamp || '' }}
           method: timestamp
 
       - name: configure
