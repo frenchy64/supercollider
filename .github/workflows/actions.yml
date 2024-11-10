@@ -16,30 +16,6 @@ on:
       - '*.md'
 
 jobs:
-  lint:
-    runs-on: ubuntu-22.04
-    env:
-      CMAKE_BUILD_PARALLEL_LEVEL: 4
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-
-      - name: lint class library
-        run: |
-          sudo npm install -g lintspaces-cli
-          lintspaces -e .editorconfig SCClassLibrary/**/*.sc || true # ignore failure
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - uses: pre-commit/action@v3.0.1
-        name: 'Run pre-commit'
-        env:
-          FULL_CHECK: 1
-
   build-params:
     runs-on: ubuntu-22.04
     outputs:
@@ -54,6 +30,28 @@ jobs:
           bb: 1.12.194
       - id: set-params
         run: ./actions/set_params_output.clj
+
+  lint:
+    runs-on: ubuntu-22.04
+    if: ${{ fromJSON(needs.build-params.outputs.params).lint != false }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: lint class library
+        run: |
+          sudo npm install -g lintspaces-cli
+          lintspaces -e .editorconfig SCClassLibrary/**/*.sc || true # ignore failure
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - uses: pre-commit/action@v3.0.1
+        name: 'Run pre-commit'
+        env:
+          FULL_CHECK: 1
 
   build-and-test-linux:
     needs: build-params

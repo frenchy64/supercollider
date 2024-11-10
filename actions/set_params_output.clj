@@ -39,6 +39,7 @@
 
 (defn all-params []
   {:sc-version (sc-version)
+   :lint false
    :linux-matrix (-> []
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
                                         :c-compiler (str "gcc-" %)
