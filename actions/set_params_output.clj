@@ -64,53 +64,44 @@
                            [11 15 16 17 18])
                      index-matrix
                      expand-splits)
-   :macos-matrix (-> [{:job-name "arm64"
-                       :os-version "15"
-                       :xcode-version "16.0"
-                       :qt-version "6.7.3" ; will use qt from aqtinstall
-                       :qt-modules "qtwebengine qtwebchannel qtwebsockets qtpositioning"
-                       :deployment-target "11"
-                       :cmake-architectures "arm64"
-                       :homebrew-packages "libsndfile readline fftw portaudio"
-                       :vcpkg-packages ""
-                       :vcpkg-triplet ""
-                       :extra-cmake-flags "" ; "-D SC_VERIFY_APP=ON" # verify app doesn't seem to work with official qt6
-                       :artifact-suffix "macOS-arm64"
-                       :run-tests true}
-                      {:job-name "x64"
-                       :os-version "13"
-                       :xcode-version "15.2"
-                       :qt-version "6.7.3" ; will use qt from aqtinstall
-                       :qt-modules "qtwebengine qtwebchannel qtwebsockets qtpositioning"
-                       :deployment-target "11"
-                       :cmake-architectures "x86_64"
-                       :homebrew-packages "libsndfile readline fftw portaudio"
-                       :vcpkg-packages ""
-                       :vcpkg-triplet ""
-                       :extra-cmake-flags "" ; -D SC_VERIFY_APP=ON # verify app doesn't seem to work with official qt6
-                       :artifact-suffix "macOS-x64"
-                       :run-tests true}
-                      {:job-name "x64 legacy"
-                       :os-version "13"
-                       :xcode-version "14.1"
-                       :qt-version "5.15.2" ; will use qt from aqtinstall
-                       :qt-modules "qtwebengine"
-                       :deployment-target "10.15"
-                       :cmake-architectures "x86_64"
-                       :homebrew-packages (if mac-cross-compiling-for-x86_64-on-arm64
-                                            ""
-                                            "readline portaudio")
-                       :vcpkg-packages (if mac-cross-compiling-for-x86_64-on-arm64
-                                         "readline portaudio libsndfile fftw3"
-                                         "libsndfile fftw3")
-                       :homebrew-uninstall (if mac-cross-compiling-for-x86_64-on-arm64
-                                             "readline"
-                                             "")
-                       :vcpkg-triplet "x64-osx-release-supercollider" ; required for build-libsndfile
-                       :extra-cmake-flags ""
-                       ; set if needed - will trigger artifact upload
-                       :artifact-suffix "macOS-x64-legacy"
-                       :run-tests true}]
+   :macos-matrix (-> []
+                     (into (map #(into {:job-name %
+                                        :qt-version "6.7.3" ; will use qt from aqtinstall
+                                        :qt-modules "qtwebengine qtwebchannel qtwebsockets qtpositioning"
+                                        :deployment-target "11"
+                                        :homebrew-packages "libsndfile readline fftw portaudio"
+                                        :extra-cmake-flags "" ; "-D SC_VERIFY_APP=ON" # verify app doesn't seem to work with official qt6
+                                        :artifact-suffix (str "macOS-" %)
+                                        :run-tests true}
+                                       (case %
+                                         "arm64" {:os-version "15"
+                                                  :xcode-version "16.0"
+                                                  :cmake-architectures %}
+                                         "x64" {:os-version "13"
+                                                :xcode-version "15.2"
+                                                :cmake-architectures "x86_64"})))
+                           ["arm64" "x64"])
+                     (conj {:job-name "x64 legacy"
+                            :os-version "13"
+                            :xcode-version "14.1"
+                            :qt-version "5.15.2" ; will use qt from aqtinstall
+                            :qt-modules "qtwebengine"
+                            :deployment-target "10.15"
+                            :cmake-architectures "x86_64"
+                            :homebrew-packages (if mac-cross-compiling-for-x86_64-on-arm64
+                                                 ""
+                                                 "readline portaudio")
+                            :vcpkg-packages (if mac-cross-compiling-for-x86_64-on-arm64
+                                              "readline portaudio libsndfile fftw3"
+                                              "libsndfile fftw3")
+                            :homebrew-uninstall (if mac-cross-compiling-for-x86_64-on-arm64
+                                                  "readline"
+                                                  "")
+                            :vcpkg-triplet "x64-osx-release-supercollider" ; required for build-libsndfile
+                            :extra-cmake-flags ""
+                            ; set if needed - will trigger artifact upload
+                            :artifact-suffix "macOS-x64-legacy"
+                            :run-tests true})
                      (into (map #(into {:os-version "13"
                                         :xcode-version "15.2"
                                         :deployment-target ""
