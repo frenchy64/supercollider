@@ -83,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - shell: bash
-        run: git fetch --recurse-submodules -j${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
+        run: git submodule update --init --jobs ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
 
       - name: prepare timestamp for cache
         id: current-date
