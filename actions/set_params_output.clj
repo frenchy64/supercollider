@@ -98,18 +98,12 @@
                                                   "readline"
                                                   "")
                             :vcpkg-triplet "x64-osx-release-supercollider" ; required for build-libsndfile
-                            :extra-cmake-flags ""
                             ; set if needed - will trigger artifact upload
                             :artifact-suffix "macOS-x64-legacy"
                             :run-tests true})
                      (into (map #(into {:os-version "13"
                                         :xcode-version "15.2"
-                                        :deployment-target ""
-                                        :cmake-architectures "x86_64"
-                                        :homebrew-packages "qt@6 libsndfile readline fftw portaudio"
-                                        :vcpkg-packages ""
-                                        :vcpkg-triplet ""
-                                        :extra-cmake-flags "-D LIBSCSYNTH=ON"}
+                                        :cmake-architectures "x86_64"}
                                        %))
                            [{:job-name "x64 use system libraries"
                              :homebrew-packages "qt@6 libsndfile readline fftw portaudio yaml-cpp boost"
