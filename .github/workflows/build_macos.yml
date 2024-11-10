@@ -120,7 +120,7 @@ jobs:
 
           echo "CMAKE_FLAGS:" $CMAKE_FLAGS
 
-          cmake $CMAKE_FLAGS ..
+          cmake $CMAKE_FLAGS -j1 ..
 
       - name: build
         run: cmake --build $BUILD_PATH --config Release --target install
