@@ -39,6 +39,7 @@
 
 (defn all-params []
   {:sc-version (sc-version)
+   :actions-cache-version 1 ;;TODO prefix all caches
    :lint false
    :linux-matrix (-> []
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
