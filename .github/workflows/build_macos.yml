@@ -56,11 +56,13 @@ jobs:
           key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).vcpkg-triplet }}-${{ steps.current-date.outputs.stamp }}
           restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).vcpkg-triplet }}-
 
-      - name: setup ccache
-        run: |
-          brew install ccache --quiet
-          # add ccache to PATH
-          echo "`brew --prefix ccache`/libexec" >> $GITHUB_PATH
+      - name: Install ccache
+        uses: tecolicom/actions-use-homebrew-tools@v1
+        with:
+          tools: 'ccache'
+
+      - name: Add ccache to PATH
+        run: echo "`brew --prefix ccache`/libexec" >> $GITHUB_PATH
 
       - name: setup vcpkg # vcpkg is not automatically installed in newer macOS runner images
         if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
@@ -68,7 +70,7 @@ jobs:
           if [[ -z "${VCPKG_INSTALLATION_ROOT}" ]]; then
             cd ${{ github.workspace }}/..
             echo "setting up vcpkg in `pwd`"
-            git clone https://github.com/microsoft/vcpkg.git
+            git clone --depth 1 https://github.com/microsoft/vcpkg.git
             cd vcpkg
             ls -a
             ./bootstrap-vcpkg.sh
@@ -77,9 +79,9 @@ jobs:
           fi
 
       - uses: tecolicom/actions-use-homebrew-tools@v1
+        if: fromJSON(inputs.matrix).homebrew-packages
         with:
           tools: ${{ fromJSON(inputs.matrix).homebrew-packages }}
-          cache: yes
 
       - name: install vcpkg packages
         if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
@@ -96,7 +98,6 @@ jobs:
           modules: ${{ fromJSON(inputs.matrix).qt-modules }}
           version: ${{ fromJSON(inputs.matrix).qt-version }}
           cache: true
-          cache-key-prefix: ${{ runner.os }}-qt${{ fromJSON(inputs.matrix).qt-version }}-${{ fromJSON(inputs.matrix).qt-modules }}
 
       - name: configure
         run: |
