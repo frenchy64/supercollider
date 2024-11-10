@@ -19,6 +19,7 @@ jobs:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       USE_SYSLIBS: ${{ fromJSON(inputs.matrix).use-syslibs }}
       SHARED_LIBSCSYNTH: ${{ fromJSON(inputs.matrix).shared-libscsynth }}
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
       CC: ${{ fromJSON(inputs.matrix).c-compiler }}
       CXX: ${{ fromJSON(inputs.matrix).cxx-compiler }}
       ARTIFACT_FILE: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"

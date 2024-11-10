@@ -21,6 +21,7 @@ jobs:
       HOMEBREW_NO_ENV_HINTS: 1
       HOMEBREW_NO_AUTO_UPDATE: 1
       HOMEBREW_NO_INSTALL_CLEANUP: 1
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
       USE_SYSLIBS: ${{ fromJSON(inputs.matrix).use-syslibs }}
       SHARED_LIBSCSYNTH: ${{ fromJSON(inputs.matrix).shared-libscsynth }}
       ARTIFACT_FILE: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).artifact-suffix }}.dmg"
@@ -123,7 +124,7 @@ jobs:
           cmake $CMAKE_FLAGS ..
 
       - name: build
-        run: cmake --build $BUILD_PATH --config Release --target install --parallel 4
+        run: cmake --build $BUILD_PATH --config Release --target install
 
       - name: create archive
         if: fromJSON(inputs.matrix).artifact-suffix
