@@ -49,29 +49,20 @@ jobs:
           key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).cmake-architectures }}-${{ steps.current-date.outputs.stamp }}
           restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).cmake-architectures }}-
 
-      - name: cache vcpkg
-        if: fromJSON(inputs.matrix).vcpkg-triplet
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/vcpkg/archives
-          key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).vcpkg-triplet }}-${{ steps.current-date.outputs.stamp }}
-          restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).vcpkg-triplet }}-
-
       - name: Install ccache
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
           tools: 'ccache'
-
       - name: Add ccache to PATH
         run: echo "`brew --prefix ccache`/libexec" >> $GITHUB_PATH
-
-      - uses: lukka/run-vcpkg@v11
 
       - uses: tecolicom/actions-use-homebrew-tools@v1
         if: fromJSON(inputs.matrix).homebrew-packages
         with:
           tools: ${{ fromJSON(inputs.matrix).homebrew-packages }}
 
+      - uses: lukka/run-vcpkg@v11
+        if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
       - name: install vcpkg packages
         if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
         run: |
