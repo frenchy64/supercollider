@@ -63,7 +63,7 @@ jobs:
       - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
         with:
           tools: ${{ steps.packages.outputs.packages }}
-          cache: ${{ runner.os }}
+          key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}
 
       - name: configure
         run: |
