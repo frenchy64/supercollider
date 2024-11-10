@@ -60,9 +60,7 @@
                                       :shared-libscsynth false}))
                            [11 15 16 17 18])
                      index-matrix
-                     expand-splits
-                     ;;FIXME temporary
-                     (->> (into [] (filter #(= "gcc-9" (:c-compiler %))))))
+                     expand-splits)
    ;;FIXME temporary
    :macos-matrix [] #_(-> [{:job-name "arm64"
                        :os-version "15"
