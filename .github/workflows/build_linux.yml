@@ -25,6 +25,7 @@ jobs:
       ARTIFACT_FILE: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"
 
     steps:
+      - run: git config --global submodule.fetchJobs ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
       - uses: actions/checkout@v4
         with:
           submodules: recursive
