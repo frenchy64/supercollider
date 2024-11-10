@@ -82,8 +82,8 @@ jobs:
       INSTALLER_FILE: "SuperCollider-${{ inputs.sc-version }}-${{ matrix.installer-suffix }}"
     steps:
       - uses: actions/checkout@v4
-      - shell: bash
-        run: git submodule update --init --jobs ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
+        with:
+          submodules: recursive
 
       - name: prepare timestamp for cache
         id: current-date

@@ -32,7 +32,8 @@ jobs:
       SKIP_SIGNING: 1 # for brew-install-universal
     steps:
       - uses: actions/checkout@v4
-      - run: git submodule update --init --jobs ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
+        with:
+          submodules: recursive
 
       - name: prepare timestamp for cache
         id: current-date
