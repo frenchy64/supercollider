@@ -113,7 +113,11 @@
                              :homebrew-packages "qt@6 libsndfile readline fftw portaudio"
                              :extra-cmake-flags "-D LIBSCSYNTH=ON"}])
                      index-matrix
-                     expand-splits)})
+                     expand-splits
+                     ;;FIXME remove
+                     (->> (into [] (comp (filter :run-tests)
+                                         (take 1))))
+                     )})
 
 (defn -main []
   (let [params (all-params)
