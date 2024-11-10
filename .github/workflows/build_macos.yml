@@ -76,6 +76,7 @@ jobs:
             echo "`pwd`" >> $GITHUB_PATH
           fi
       - uses: lukka/run-vcpkg@v11
+        if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
 
       - name: install vcpkg packages
         if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
