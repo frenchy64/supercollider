@@ -121,7 +121,7 @@ jobs:
 
           echo "CMAKE_FLAGS:" $CMAKE_FLAGS
 
-          cmake $CMAKE_FLAGS --parallel 1 ..
+          CMAKE_BUILD_PARALLEL_LEVEL=1 cmake $CMAKE_FLAGS ..
 
       - name: build
         run: cmake --build $BUILD_PATH --config Release --target install
