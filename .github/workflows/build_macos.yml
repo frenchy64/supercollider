@@ -31,10 +31,10 @@ jobs:
       BREW_UNIVERSAL_WORKDIR: ${{ github.workspace }}/brew-universal
       SKIP_SIGNING: 1 # for brew-install-universal
     steps:
-      - run: git config --global fetch.parallel 0
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
+      - run: git submodule update --init --recursive --jobs $CMAKE_BUILD_PARALLEL_LEVEL
 
       - name: prepare timestamp for cache
         id: current-date
