@@ -13,7 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
+        include: |
+          []
           #- job-name: "32-bit"
           #  fftw-arch: "x86"
           #  cmake-arch: "Win32"
