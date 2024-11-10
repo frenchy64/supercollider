@@ -41,20 +41,26 @@ jobs:
           key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-${{ steps.current-date.outputs.stamp }}
           restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-
 
-      - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
-        with:
-          tools: 'build-essential cmake pkg-config libjack-jackd2-dev libsndfile1-dev libasound2-dev libavahi-client-dev libreadline6-dev libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache ${{
-                 startsWith(env.CC, "clang-") && env.CC
-                 }}${{ startsWith(env.CC, "clang-") && env.CXX
-                 }}${{ "qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools qt6-declarative-dev libqt6gui6 libqt6printsupport6 libqt6svgwidgets6 libqt6websockets6-dev libqt6webenginecore6 qt6-webengine-dev qt6-webengine-dev-tools libqt6webchannel6-dev libqt6opengl6-dev libqt6svg6-dev linguist-qt6 qt6-l10n-tools  libglx-dev libgl1-mesa-dev libvulkan-dev libxkbcommon-dev libxcb-xkb-dev"
-                  }}${{ env.USE_SYSLIBS == "true" && "libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev"
-                 }}'
 
-      - name: install dependencies
+      - id: packages
         run: |
+          PACKAGES='build-essential cmake pkg-config libjack-jackd2-dev libsndfile1-dev libasound2-dev libavahi-client-dev libreadline6-dev libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache'
           # install appropriate clang/gcc compilers
           if [[ "$CC" =~ clang-[1-9] ]]; then
-            sudo apt-get install -y libc++-${CC##clang-}-dev libc++abi-${CC##clang-}-dev # install additional libraries; package names are libc++-X-dev and libc++abi-X-dev
+            PACKAGES="$PACKAGES $CC" # package names are clang-X
+            PACKAGES="$PACKAGES libc++-${CC##clang-}-dev libc++abi-${CC##clang-}-dev" # install additional libraries; package names are libc++-X-dev and libc++abi-X-dev
+          elif [[ "$CC" =~ gcc-[1-9] ]]; then
+            PACKAGES="$PACKAGES $CXX" # package names are g++-X
+          fi
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          # install system libraries
+          PACKAGES="$PACKAGES ${{ env.USE_SYSLIBS == 'true' && "libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev" }}
+          # install qt from apt
+          PACKAGES="$PACKAGES qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools qt6-declarative-dev libqt6gui6 libqt6printsupport6 libqt6svgwidgets6 libqt6websockets6-dev libqt6webenginecore6 qt6-webengine-dev qt6-webengine-dev-tools libqt6webchannel6-dev libqt6opengl6-dev libqt6svg6-dev linguist-qt6 qt6-l10n-tools  libglx-dev libgl1-mesa-dev libvulkan-dev libxkbcommon-dev libxcb-xkb-dev"
+
+      - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
+        with:
+          tools: ${{ steps.packages.outputs.packages }}
 
       - name: configure
         run: |
@@ -71,7 +77,7 @@ jobs:
       - name: build
         run: |
           cd $BUILD_PATH
-          make install -j4
+          make install -j${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
 
       - name: create archive
         if: fromJSON(inputs.matrix).run-tests
