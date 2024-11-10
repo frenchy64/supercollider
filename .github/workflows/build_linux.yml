@@ -45,13 +45,14 @@ jobs:
 
       - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
         with:
-          tools: 'build-essential cmake pkg-config libjack-jackd2-dev libsndfile1-dev libasound2-dev libavahi-client-dev libreadline6-dev libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache'
+          tools: 'build-essential cmake pkg-config libjack-jackd2-dev libasound2-dev libavahi-client-dev libreadline6-dev libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache'
           key: ${{ github.event_name != 'pull_request' && steps.current-date.outputs.stamp || '' }}
           method: timestamp
 
       - id: packages
         run: |
-          PACKAGES=
+          # problems recovering from cache
+          PACKAGES='libsndfile1-dev'
           # install appropriate clang/gcc compilers
           if [[ "$CC" =~ clang-[1-9] ]]; then
             PACKAGES="$PACKAGES $CC" # package names are clang-X
