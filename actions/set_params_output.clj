@@ -37,11 +37,14 @@
     tag
     (getenv "GITHUB_SHA")))
 
+(def mac-cross-compiling-for-x86_64-on-arm64 false)
+
 (defn all-params []
   {:sc-version (sc-version)
    :actions-cache-version 1 ;;TODO prefix all caches
    :lint false
-   :linux-matrix (-> []
+   ;;FIXME temporary
+   :linux-matrix [] #_(-> []
                      (into (map #(into {:os-version (if (<= % 12) "22.04" "24.04")
                                         :c-compiler (str "gcc-" %)
                                         :cxx-compiler (str "g++-" %)
@@ -61,8 +64,7 @@
                            [11 15 16 17 18])
                      index-matrix
                      expand-splits)
-   ;;FIXME temporary
-   :macos-matrix [] #_(-> [{:job-name "arm64"
+   :macos-matrix (-> [{:job-name "arm64"
                        :os-version "15"
                        :xcode-version "16.0"
                        :qt-version "6.7.3" ; will use qt from aqtinstall
@@ -95,11 +97,15 @@
                        :qt-modules "qtwebengine"
                        :deployment-target "10.15"
                        :cmake-architectures "x86_64"
-                       :homebrew-packages "readline portaudio"
-                       :vcpkg-packages "libsndfile fftw3"
-                       ;:homebrew-packages "" ; use this instead when cross-compiling for x86_64 on arm64
-                       ;:homebrew-uninstall "readline" ; use this instead when cross-compiling for x86_64 on arm64
-                       ;:vcpkg-packages "readline portaudio libsndfile fftw3" ; use this instead when cross-compiling for x86_64 on arm64
+                       :homebrew-packages (if mac-cross-compiling-for-x86_64-on-arm64
+                                            ""
+                                            "readline portaudio")
+                       :vcpkg-packages (if mac-cross-compiling-for-x86_64-on-arm64
+                                         "readline portaudio libsndfile fftw3"
+                                         "libsndfile fftw3")
+                       :homebrew-uninstall (if mac-cross-compiling-for-x86_64-on-arm64
+                                             "readline"
+                                             "")
                        :vcpkg-triplet "x64-osx-release-supercollider" ; required for build-libsndfile
                        :extra-cmake-flags ""
                        ; set if needed - will trigger artifact upload

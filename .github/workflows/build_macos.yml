@@ -48,17 +48,6 @@ jobs:
           key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).cmake-architectures }}-${{ steps.current-date.outputs.stamp }}
           restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).xcode-version }}-${{ fromJSON(inputs.matrix).deployment-target }}-${{ fromJSON(inputs.matrix).cmake-architectures }}-
 
-      - name: cleanup homebrew downloads # always remove existing downloads first, as we bring back relevant downloads from cache
-        run: rm -rf $(brew --cache)/downloads
-
-      - name: cache homebrew downloads
-        uses: actions/cache@v4
-        id: cache-homebrew
-        with:
-          path: ~/Library/Caches/Homebrew/downloads
-          key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).cmake-architectures }}-homebrew-${{ steps.current-date.outputs.week }}
-          restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).cmake-architectures }}-homebrew-
-
       - name: cache vcpkg
         if: fromJSON(inputs.matrix).vcpkg-triplet
         uses: actions/cache@v4
@@ -87,9 +76,10 @@ jobs:
             echo "`pwd`" >> $GITHUB_PATH
           fi
 
-      - name: install homebrew packages
-        if: fromJSON(inputs.matrix).homebrew-packages
-        run: brew install ${{ fromJSON(inputs.matrix).homebrew-packages }} --quiet
+      - uses: tecolicom/actions-use-homebrew-tools@v1
+        with:
+          tools: ${{ fromJSON(inputs.matrix).homebrew-packages }}
+          cache: yes
 
       - name: install vcpkg packages
         if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
