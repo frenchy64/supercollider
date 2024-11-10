@@ -65,19 +65,7 @@ jobs:
       - name: Add ccache to PATH
         run: echo "`brew --prefix ccache`/libexec" >> $GITHUB_PATH
 
-      - name: setup vcpkg # vcpkg is not automatically installed in newer macOS runner images
-        if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
-        run: |
-          if [[ -z "${VCPKG_INSTALLATION_ROOT}" ]]; then
-            cd ${{ github.workspace }}/..
-            echo "setting up vcpkg in `pwd`"
-            git clone --depth 1 https://github.com/microsoft/vcpkg.git
-            cd vcpkg
-            ls -a
-            ./bootstrap-vcpkg.sh
-            echo "VCPKG_INSTALLATION_ROOT=`pwd`" >> $GITHUB_ENV # use the same env var that was used for VCPKG in older runner images
-            echo "`pwd`" >> $GITHUB_PATH
-          fi
+      - uses: lukka/run-vcpkg@v11
 
       - uses: tecolicom/actions-use-homebrew-tools@v1
         if: fromJSON(inputs.matrix).homebrew-packages
