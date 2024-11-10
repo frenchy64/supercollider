@@ -53,7 +53,8 @@ jobs:
             PACKAGES="$PACKAGES $CXX" # package names are g++-X
           fi
           # install system libraries
-          PACKAGES="$PACKAGES ${{ env.USE_SYSLIBS == 'true' && 'libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev' }}
+          if [[ "$USE_SYSLIBS" == true ]]; then
+          PACKAGES="$PACKAGES libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev"
           # install qt from apt
           PACKAGES="$PACKAGES qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools qt6-declarative-dev libqt6gui6 libqt6printsupport6 libqt6svgwidgets6 libqt6websockets6-dev libqt6webenginecore6 qt6-webengine-dev qt6-webengine-dev-tools libqt6webchannel6-dev libqt6opengl6-dev libqt6svg6-dev linguist-qt6 qt6-l10n-tools  libglx-dev libgl1-mesa-dev libvulkan-dev libxkbcommon-dev libxcb-xkb-dev"
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
