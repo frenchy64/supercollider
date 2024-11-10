@@ -123,7 +123,7 @@ jobs:
           cmake $CMAKE_FLAGS ..
 
       - name: build
-        run: cmake --build $BUILD_PATH --config Release --target install
+        run: cmake --build $BUILD_PATH --config Release --target install --parallel 4
 
       - name: create archive
         if: fromJSON(inputs.matrix).artifact-suffix
