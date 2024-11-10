@@ -26,7 +26,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: git submodule update --init --jobs ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
+        with:
+          submodules: recursive
+      #- run: git submodule update --init --jobs ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
 
       - name: prepare daily timestamp for cache
         id: current-date
@@ -62,7 +64,7 @@ jobs:
       - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
         with:
           tools: ${{ steps.packages.outputs.packages }}
-          cache: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}
+          cache: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}
 
       - name: configure
         run: |
