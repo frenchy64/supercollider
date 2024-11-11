@@ -214,9 +214,10 @@ jobs:
         id: test-outputs
         if: matrix.artifact-suffix
         run: bb -e '(spit (System/getenv "GITHUB_OUTPUT")
-                          (str "test-matrix=" (json/encode {:os-version "${{ matrix.os-version }}"
-                                                            :splits (range ${{ inputs.test-splits}})})
-                               "\n")
+                          (doto (str "test-matrix=" (json/encode {:os-version "${{ matrix.os-version }}"
+                                                                  :splits (range ${{ inputs.test-splits}})})
+                                     "\n"
+                            println)
                           :append true)'
 
   test-macos:
