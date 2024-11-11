@@ -26,6 +26,9 @@ on:
       artifact-suffix:
         required: true
         type: string
+      run-tests:
+        required: true
+        type: boolean
 
 jobs:
   build-linux:
@@ -107,7 +110,7 @@ jobs:
           path: ${{ env.INSTALL_PATH }}/${{ env.ARTIFACT_FILE }}.zip
   test-linux:
     needs: build-linux
-    if: inputs.artifact-suffix
+    if: inputs.run-tests
     uses: ./.github/workflows/test_linux.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}"

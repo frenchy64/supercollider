@@ -65,6 +65,7 @@ jobs:
       use-syslibs: ${{ matrix.use-syslibs }}
       shared-libscsynth: ${{ matrix.shared-libscsynth }}
       artifact-suffix: ${{ matrix.artifact-suffix }}
+      run-tests: ${{ matrix.run-tests || false }}
     secrets: inherit
     strategy:
       fail-fast: false
@@ -92,6 +93,7 @@ jobs:
             use-syslibs: false
             shared-libscsynth: false
             artifact-suffix: "ubuntu-22.04-gcc12" # will trigger artifact upload; after changing this update the test-linux artifact-file in actions.yml
+            run-tests: true
 
           - job-name: "use system libraries"
             os-version: "24.04"
