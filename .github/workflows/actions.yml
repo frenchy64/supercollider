@@ -147,20 +147,90 @@ jobs:
     uses: ./.github/workflows/build_macos.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
+      job-name: ${{ matrix.job-name }}
+      os-version: ${{ matrix.os-version }}
+      xcode-version: ${{ matrix.xcode-version }}
+      qt-version: ${{ matrix.qt-version }}
+      qt-modules: ${{ matrix.qt-modules }}
+      deployment-target: ${{ matrix.deployment-target }}
+      cmake-architectures: ${{ matrix.cmake-architectures }}
+      homebrew-packages: ${{ matrix.homebrew-packages }}
+      vcpkg-packages: ${{ matrix.vcpkg-packages }}
+      vcpkg-triplet: ${{ matrix.vcpkg-triplet }}
+      extra-cmake-flags: ${{ matrix.extra-cmake-flags }}
+      artifact-suffix: ${{ matrix.artifact-suffix }}
     secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - job-name: "arm64"
+            os-version: "15"
+            xcode-version: "16.0"
+            qt-version: "6.7.3" # will use qt from aqtinstall
+            qt-modules: 'qtwebengine qtwebchannel qtwebsockets qtpositioning'
+            deployment-target: "11"
+            cmake-architectures: "arm64"
+            homebrew-packages: "libsndfile readline fftw portaudio"
+            vcpkg-packages: ""
+            vcpkg-triplet: ""
+            extra-cmake-flags: "" # -D SC_VERIFY_APP=ON # verify app doesn't seem to work with official qt6
+            artifact-suffix: "macOS-arm64"
+
+          - job-name: "x64"
+            os-version: "13"
+            xcode-version: "15.2"
+            qt-version: "6.7.3" # will use qt from aqtinstall
+            qt-modules: 'qtwebengine qtwebchannel qtwebsockets qtpositioning'
+            deployment-target: "11"
+            cmake-architectures: "x86_64"
+            homebrew-packages: "libsndfile readline fftw portaudio"
+            vcpkg-packages: ""
+            vcpkg-triplet: ""
+            extra-cmake-flags: "" # -D SC_VERIFY_APP=ON # verify app doesn't seem to work with official qt6
+            artifact-suffix: "macOS-x64"
+
+          - job-name: "x64 legacy"
+            os-version: "13"
+            xcode-version: "14.1"
+            qt-version: "5.15.2" # will use qt from aqtinstall
+            qt-modules: 'qtwebengine'
+            deployment-target: "10.15"
+            cmake-architectures: x86_64
+            homebrew-packages: "readline portaudio"
+            vcpkg-packages: "libsndfile fftw3"
+            # homebrew-packages: "" # use this instead when cross-compiling for x86_64 on arm64
+            # homebrew-uninstall: "readline" # use this instead when cross-compiling for x86_64 on arm64
+            # vcpkg-packages: "readline portaudio libsndfile fftw3" # use this instead when cross-compiling for x86_64 on arm64
+            vcpkg-triplet: x64-osx-release-supercollider # required for build-libsndfile
+            extra-cmake-flags: ""
+            artifact-suffix: "macOS-x64-legacy" # set if needed - will trigger artifact upload
+
+          - job-name: "x64 use system libraries"
+            os-version: "13"
+            xcode-version: "15.2"
+            deployment-target: ""
+            cmake-architectures: x86_64
+            homebrew-packages: "qt@6 libsndfile readline fftw portaudio yaml-cpp boost"
+            vcpkg-packages: ""
+            vcpkg-triplet: ""
+            extra-cmake-flags: "-D SYSTEM_BOOST=ON -D SYSTEM_YAMLCPP=ON"
+
+          - job-name: "x64 shared libscsynth"
+            os-version: "13"
+            xcode-version: "15.2"
+            deployment-target: ""
+            cmake-architectures: x86_64
+            homebrew-packages: "qt@6 libsndfile readline fftw portaudio"
+            vcpkg-packages: ""
+            vcpkg-triplet: ""
+            extra-cmake-flags: "-D LIBSCSYNTH=ON"
 
   build-windows:
     needs: [lint, version-getter]
     uses: ./.github/workflows/build_windows.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
-    secrets: inherit
-
-  test-macos:
-    needs: [version-getter, build-macos]
-    uses: ./.github/workflows/test_macos.yml
-    with:
-      artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-macOS-x64.dmg"
     secrets: inherit
 
   # test-windows:
