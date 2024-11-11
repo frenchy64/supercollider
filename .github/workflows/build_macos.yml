@@ -61,7 +61,6 @@ jobs:
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
           tools: 'ccache'
-          cache: no
 
       - name: Add ccache to PATH
         run: echo "`brew --prefix ccache`/libexec" >> $GITHUB_PATH
@@ -84,7 +83,6 @@ jobs:
         if: fromJSON(inputs.matrix).homebrew-packages
         with:
           tools: ${{ fromJSON(inputs.matrix).homebrew-packages }}
-          cache: no
 
       - name: install vcpkg packages
         if: fromJSON(inputs.matrix).vcpkg-packages && fromJSON(inputs.matrix).vcpkg-triplet
