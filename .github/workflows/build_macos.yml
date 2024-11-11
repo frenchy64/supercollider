@@ -180,6 +180,7 @@ jobs:
 
   test-macos:
     needs: build-macos
+    if: inputs.artifact-suffix
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
