@@ -9,8 +9,13 @@ if(thisProcess.argv.size > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
-	~thisSplit = thisProcess.argv[2].asInteger();
-	~nSplits = thisProcess.argv[3].asInteger();
+  if(thisProcess.argv.size > 2) {
+    ~thisSplit = thisProcess.argv[2].asInteger();
+    ~nSplits = thisProcess.argv[3].asInteger();
+  } {
+    ~thisSplit = 0;
+    ~nSplits = 1;
+  };
 	~exitWhenDone = true;
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";

@@ -193,9 +193,4 @@ jobs:
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
       os-version: ${{ inputs.os-version }}
-      this-split: ${{ matrix.this-split }}
-      nsplits: ${{ inputs.test-splits }}
-    strategy:
-      matrix:
-        this-split: ${{ fromJSON(needs.build-macos.outputs.test-matrix) }}
     secrets: inherit
