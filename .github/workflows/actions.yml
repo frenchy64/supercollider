@@ -159,6 +159,7 @@ jobs:
       vcpkg-triplet: ${{ matrix.vcpkg-triplet }}
       extra-cmake-flags: ${{ matrix.extra-cmake-flags }}
       artifact-suffix: ${{ matrix.artifact-suffix }}
+      run-tests: ${{ matrix.run-tests || false }}
     secrets: inherit
     strategy:
       fail-fast: false
@@ -189,6 +190,7 @@ jobs:
             vcpkg-triplet: ""
             extra-cmake-flags: "" # -D SC_VERIFY_APP=ON # verify app doesn't seem to work with official qt6
             artifact-suffix: "macOS-x64"
+            run-tests: true
 
           - job-name: "x64 legacy"
             os-version: "13"

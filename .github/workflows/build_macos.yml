@@ -41,6 +41,9 @@ on:
       artifact-suffix:
         required: true
         type: string
+      run-tests:
+        required: true
+        type: boolean
 
 jobs:
   build-macos:
@@ -180,7 +183,7 @@ jobs:
 
   test-macos:
     needs: build-macos
-    if: inputs.artifact-suffix
+    if: inputs.run-tests
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
