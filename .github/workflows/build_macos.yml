@@ -58,7 +58,6 @@ jobs:
       HOMEBREW_NO_ANALYTICS: 1
       HOMEBREW_NO_ENV_HINTS: 1
       HOMEBREW_NO_AUTO_UPDATE: 1
-      CMAKE_BUILD_PARALLEL_LEVEL: ${{ inputs.os-version == 13 && '4' || '3' }}
       HOMEBREW_NO_INSTALL_CLEANUP: 1
       USE_SYSLIBS: ${{ inputs.use-syslibs }}
       SHARED_LIBSCSYNTH: ${{ inputs.shared-libscsynth }}
@@ -95,13 +94,11 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.xcode-version }}-${{ inputs.deployment-target }}-${{ inputs.vcpkg-triplet }}-${{ steps.current-date.outputs.stamp }}
           restore-keys: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.xcode-version }}-${{ inputs.deployment-target }}-${{ inputs.vcpkg-triplet }}-
 
-      - name: Install ccache
-        uses: tecolicom/actions-use-homebrew-tools@v1
-        with:
-          tools: 'ccache'
-
-      - name: Add ccache to PATH
-        run: echo "`brew --prefix ccache`/libexec" >> $GITHUB_PATH
+      - name: setup ccache
+        run: |
+          brew install ccache --quiet
+          # add ccache to PATH
+          echo "`brew --prefix ccache`/libexec" >> $GITHUB_PATH
 
       - name: setup vcpkg # vcpkg is not automatically installed in newer macOS runner images
         if: inputs.vcpkg-packages && inputs.vcpkg-triplet
@@ -117,11 +114,9 @@ jobs:
             echo "`pwd`" >> $GITHUB_PATH
           fi
 
-      - name: Install homebrew packages
-        uses: tecolicom/actions-use-homebrew-tools@v1
+      - name: install homebrew packages
         if: inputs.homebrew-packages
-        with:
-          tools: ${{ inputs.homebrew-packages }}
+        run: brew install ${{ inputs.homebrew-packages }} --quiet
 
       - name: install vcpkg packages
         if: inputs.vcpkg-packages && inputs.vcpkg-triplet
@@ -138,6 +133,7 @@ jobs:
           modules: ${{ inputs.qt-modules }}
           version: ${{ inputs.qt-version }}
           cache: true
+          cache-key-prefix: ${{ runner.os }}-qt${{ inputs.qt-version }}-${{ inputs.qt-modules }}
 
       - name: configure
         run: |
@@ -198,10 +194,9 @@ jobs:
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
       os-version: ${{ inputs.os-version }}
-      #this-split: ${{ matrix.this-split }}
-      this-split: 0
+      this-split: ${{ matrix.this-split }}
       nsplits: ${{ inputs.test-splits }}
-    #strategy:
-    #  matrix:
-    #    this-split: ${{ fromJSON(needs.build-macos.outputs.test-matrix) }}
+    strategy:
+      matrix:
+        this-split: ${{ fromJSON(needs.build-macos.outputs.test-matrix) }}
     secrets: inherit
