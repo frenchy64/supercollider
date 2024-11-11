@@ -5,10 +5,15 @@ on:
       sc-version:
         required: true
         type: string
+      test-splits:
+        required: true
+        type: number
 
 jobs:
   build-macos:
     runs-on: macos-${{ matrix.os-version }}
+    outputs:
+      test-matrix: ${{ steps.test-outputs.outputs.test-matrix }}
     strategy:
       fail-fast: false
       matrix:
@@ -141,7 +146,8 @@ jobs:
             echo "`pwd`" >> $GITHUB_PATH
           fi
 
-      - uses: tecolicom/actions-use-homebrew-tools@v1
+      - name: Install homebrew packages
+        uses: tecolicom/actions-use-homebrew-tools@v1
         if: matrix.homebrew-packages
         with:
           tools: ${{ matrix.homebrew-packages }}
@@ -199,3 +205,29 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_FILE }}
           path: ${{ env.INSTALL_PATH }}/${{ env.ARTIFACT_FILE }}
+
+      - uses: DeLaGuardo/setup-clojure@12.6
+        if: matrix.artifact-suffix
+        with:
+          bb: 1.12.194
+      - name: output test matrix
+        id: test-outputs
+        if: matrix.artifact-suffix
+        run: bb -e '(spit (System/getenv "GITHUB_OUTPUT")
+                          (str "test-matrix=" (json/encode {:os-version "${{ matrix.os-version }}"
+                                                            :splits (range ${{ inputs.test-splits}})})
+                               "\n)
+                          :append true)'
+
+  test-macos:
+    needs: build-macos
+    uses: ./.github/workflows/test_macos.yml
+    with:
+      artifact-file: "SuperCollider-${{ inputs.sc-version }}-macOS-x64.dmg"
+      os-version: ${{ fromJSON(needs.build-macos.outputs.test-matrix).os-version }}
+      this-split: ${{ matrix.this-split }}
+      nsplits: ${{ inputs.test-splits }}
+    strategy:
+      matrix:
+        this-split: ${{ fromJSON(needs.build-macos.outputs.test-matrix).splits }}
+    secrets: inherit

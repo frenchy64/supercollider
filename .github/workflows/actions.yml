@@ -70,6 +70,7 @@ jobs:
     uses: ./.github/workflows/build_macos.yml
     with:
       sc-version: ${{ fromJSON(needs.build-params.outputs.params).sc-version }}
+      test-splits: 4
     secrets: inherit
 
   build-windows:
@@ -80,15 +81,6 @@ jobs:
     secrets: inherit
 
 
-  test-macos:
-    needs: [build-params, build-macos]
-    uses: ./.github/workflows/test_macos.yml
-    with:
-      artifact-file: "SuperCollider-${{ fromJSON(needs.build-params.outputs.params).sc-version }}-macOS-x64.dmg"
-      os-version: 12
-      this-split: 0
-      nsplits: 1
-    secrets: inherit
 
   # test-windows:
   #   needs: [build-params, build-windows]
