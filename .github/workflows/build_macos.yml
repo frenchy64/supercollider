@@ -181,13 +181,13 @@ jobs:
         if: inputs.artifact-suffix
         with:
           bb: 1.12.194
+      # generates JSON array [0...test-splits-1] 
       - name: output test matrix
         id: set-test-matrix
         if: inputs.artifact-suffix
         run: bb -e '(spit (System/getenv "GITHUB_OUTPUT")
                           (doto (str "test-matrix=" (json/encode (range ${{ inputs.test-splits }}))
                                      "\n")
-                            ;; print debug
                             print)
                           :append true)'
 
