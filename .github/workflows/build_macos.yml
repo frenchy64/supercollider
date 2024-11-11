@@ -216,7 +216,7 @@ jobs:
         run: bb -e '(spit (System/getenv "GITHUB_OUTPUT")
                           (doto (str "test-matrix=" (json/encode {:os-version "${{ matrix.os-version }}"
                                                                   :splits (range ${{ inputs.test-splits}})})
-                                     "\n"
+                                     "\n")
                             println)
                           :append true)'
 
