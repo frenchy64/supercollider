@@ -70,8 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: false
-      - run: git submodule update --init --recursive --jobs $CMAKE_BUILD_PARALLEL_LEVEL
+          submodules: recursive
 
       - name: prepare timestamp for cache
         id: current-date
