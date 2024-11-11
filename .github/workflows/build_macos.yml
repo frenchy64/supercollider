@@ -222,6 +222,7 @@ jobs:
   test-macos:
     needs: build-macos
     uses: ./.github/workflows/test_macos.yml
+    if: needs.build-macos.outputs.test-matrix
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-macOS-x64.dmg"
       os-version: ${{ fromJSON(needs.build-macos.outputs.test-matrix).os-version }}
