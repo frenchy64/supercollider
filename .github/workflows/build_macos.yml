@@ -142,7 +142,7 @@ jobs:
           fi
 
       - uses: tecolicom/actions-use-homebrew-tools@v1
-        if: fromJSON(inputs.matrix).homebrew-packages
+        if: matrix.homebrew-packages
         with:
           tools: ${{ matrix.homebrew-packages }}
 
