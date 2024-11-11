@@ -194,7 +194,7 @@ jobs:
   test-macos:
     needs: build-macos
     uses: ./.github/workflows/test_macos.yml
-    if: needs.build-macos.outputs.test-matrix
+    if: inputs.artifact-suffix
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-macOS-x64.dmg"
       os-version: ${{ inputs.os-version }}
@@ -202,5 +202,5 @@ jobs:
       nsplits: ${{ inputs.test-splits }}
     strategy:
       matrix:
-        this-split: ${{ fromJSON(needs.build-macos.outputs.test-matrix).splits }}
+        this-split: ${{ fromJSON(needs.build-macos.outputs.test-matrix) }}
     secrets: inherit
