@@ -184,4 +184,5 @@ jobs:
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
+      os-version: ${{ inputs.os-version }}
     secrets: inherit
