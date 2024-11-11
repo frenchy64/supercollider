@@ -85,6 +85,17 @@ jobs:
           key: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.xcode-version }}-${{ inputs.deployment-target }}-${{ inputs.cmake-architectures }}-${{ steps.current-date.outputs.stamp }}
           restore-keys: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.xcode-version }}-${{ inputs.deployment-target }}-${{ inputs.cmake-architectures }}-
 
+      - name: cleanup homebrew downloads # always remove existing downloads first, as we bring back relevant downloads from cache
+        run: rm -rf $(brew --cache)/downloads
+
+      - name: cache homebrew downloads
+        uses: actions/cache@v4
+        id: cache-homebrew
+        with:
+          path: ~/Library/Caches/Homebrew/downloads
+          key: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.cmake-architectures }}-homebrew-${{ steps.current-date.outputs.week }}
+          restore-keys: ${{ runner.os }}-${{ inputs.os-version }}-${{ inputs.cmake-architectures }}-homebrew-
+
       - name: cache vcpkg
         if: inputs.vcpkg-triplet
         uses: actions/cache@v4
