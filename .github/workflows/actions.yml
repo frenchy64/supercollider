@@ -69,12 +69,7 @@ jobs:
     needs: build-params
     uses: ./.github/workflows/build_macos.yml
     with:
-      params: ${{ needs.build-params.outputs.params }}
-      matrix: ${{ toJSON(fromJSON(needs.build-params.outputs.params).macos-matrix[matrix.id]) }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.build-params.outputs.params).macos-matrix }}
+      sc-version: ${{ fromJSON(needs.build-params.outputs.params).sc-version }}
     secrets: inherit
 
   build-windows:
@@ -85,7 +80,12 @@ jobs:
     secrets: inherit
 
 
-
+  test-macos:
+    needs: [version-getter, build-macos]
+    uses: ./.github/workflows/test_macos.yml
+    with:
+      artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-macOS-x64.dmg"
+    secrets: inherit
 
   # test-windows:
   #   needs: [build-params, build-windows]
