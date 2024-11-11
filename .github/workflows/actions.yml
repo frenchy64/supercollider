@@ -58,7 +58,89 @@ jobs:
     uses: ./.github/workflows/build_linux.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
+      job-name: ${{ matrix.job-name }}
+      os-version: ${{ matrix.os-version }}
+      c-compiler: ${{ matrix.c-compiler }}
+      cxx-compiler: ${{ matrix.cxx-compiler }}
+      use-syslibs: ${{ matrix.use-syslibs }}
+      shared-libscsynth: ${{ matrix.shared-libscsynth }}
+      artifact-suffix: ${{ matrix.artifact-suffix }}
     secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "gcc-9"
+            cxx-compiler: "g++-9"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "gcc-11"
+            cxx-compiler: "g++-11"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "gcc-12"
+            cxx-compiler: "g++-12"
+            use-syslibs: false
+            shared-libscsynth: false
+            artifact-suffix: "ubuntu-22.04-gcc12" # will trigger artifact upload; after changing this update the test-linux artifact-file in actions.yml
+
+          - job-name: "use system libraries"
+            os-version: "24.04"
+            c-compiler: "gcc-13"
+            cxx-compiler: "g++-13"
+            use-syslibs: true
+            shared-libscsynth: false
+
+          - job-name: "shared libscsynth"
+            os-version: "24.04"
+            c-compiler: "gcc-14"
+            cxx-compiler: "g++-14"
+            use-syslibs: false
+            shared-libscsynth: true
+            
+          - job-name: ""
+            os-version: "22.04"
+            c-compiler: "clang-11"
+            cxx-compiler: "clang++-11"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-15"
+            cxx-compiler: "clang++-15"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-16"
+            cxx-compiler: "clang++-16"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-17"
+            cxx-compiler: "clang++-17"
+            use-syslibs: false
+            shared-libscsynth: false
+
+          - job-name: ""
+            os-version: "24.04"
+            c-compiler: "clang-18"
+            cxx-compiler: "clang++-18"
+            use-syslibs: false
+            shared-libscsynth: false
 
   build-macos:
     needs: [lint, version-getter]
@@ -72,13 +154,6 @@ jobs:
     uses: ./.github/workflows/build_windows.yml
     with:
       sc-version: ${{ needs.version-getter.outputs.sc-version }}
-    secrets: inherit
-
-  test-linux:
-    needs: [version-getter, build-linux]
-    uses: ./.github/workflows/test_linux.yml
-    with:
-      artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-ubuntu-22.04-gcc12"
     secrets: inherit
 
   test-macos:
