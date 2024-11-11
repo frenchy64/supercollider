@@ -148,7 +148,7 @@ jobs:
       - name: build
         run: |
           cd $BUILD_PATH
-          make install -j2
+          make install -j4
 
       - name: create archive
         if: matrix.artifact-suffix
