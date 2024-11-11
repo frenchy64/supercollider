@@ -8,7 +8,7 @@ on:
       test-splits:
         required: true
         type: string
-      job-name: "arm64"
+      job-name:
         required: true
         type: string
       os-version:
