@@ -7,7 +7,7 @@ on:
         type: string
       test-splits:
         required: true
-        type: string
+        type: number
       job-name:
         required: true
         type: string
@@ -196,7 +196,7 @@ jobs:
     uses: ./.github/workflows/test_macos.yml
     if: inputs.artifact-suffix
     with:
-      artifact-file: "SuperCollider-${{ inputs.sc-version }}-macOS-x64.dmg"
+      artifact-file: "SuperCollider-${{ inputs.sc-version }}-${{ inputs.artifact-suffix }}.dmg"
       os-version: ${{ inputs.os-version }}
       #this-split: ${{ matrix.this-split }}
       this-split: 0
