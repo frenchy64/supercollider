@@ -49,7 +49,7 @@ jobs:
   build-macos:
     runs-on: macos-${{ inputs.os-version }}
     outputs:
-      test-matrix: ${{ steps.set-test-outputs.outputs.test-matrix }}
+      test-matrix: ${{ steps.set-test-matrix.outputs.test-matrix }}
 
     name: macOS ${{ inputs.job-name }}
     env:
