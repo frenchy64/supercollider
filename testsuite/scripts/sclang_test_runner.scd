@@ -163,7 +163,7 @@ if(File.exists(~testProto).not) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
-  tests = ~selectThisTestSplit.(tests, ~thisSplit, ~nSplits);
+	tests = ~selectThisTestSplit.(tests, ~thisSplit, ~nSplits);
 
 	~verboseSetup.if({"After split: ".post; tests.do(_.postln)});
 
