@@ -96,7 +96,13 @@ if(nClumps > 1) {
 };
 
 ~selectThisTestClump = {|tests|
-  var sortedTests = tests.as(Array).sort;
+  var sortedTests = tests.as(Array).sort({
+    |a,b|
+    if((a[\suite]==b[\suite]) && a[\test]==(b[\test])) {
+      Error("Duplicate tests! % %".format(a, b)).throw
+    };
+    (a[\suite]<b[\suite]) && (a[\test]<b[\test])
+  });
   var nTests = sortedTests.size();
   // if this is less than 1, all tests will be in the first clump
   var testsPerClump = (nTests/nClumps).asInteger;
@@ -285,6 +291,7 @@ if(nClumps > 1) {
 	// 0.exit;
 	if(~exitWhenDone) {
 		0.exit;
+    this.halt;
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
 } { |error| //catch
