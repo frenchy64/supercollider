@@ -8,17 +8,17 @@
 // 4. the number of test partitions
 // - default: 1 (must provide if partition provided)
 (
-var thisClump, nClumps;
-~exitWhenDone = false;
-if(thisProcess.argv.size > 0) {
+var thisClump, nClumps, nargv = thisProcess.argv.size;
+~exitWhenDone = nargv > 0;
+try {
+if(nargv > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
-	if(thisProcess.argv.size > 2) {
+	if(nargv > 2) {
 		thisClump = thisProcess.argv[2].asInteger();
 		nClumps = thisProcess.argv[3].asInteger();
 	};
-	~exitWhenDone = true;
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";
 	// ~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_all.scd"; // for testing
@@ -26,17 +26,16 @@ if(thisProcess.argv.size > 0) {
 };
 
 thisClump ?? {
+  if(nClumps.notNil) {
+    // this should be unreachable
+    Error("thisClump and nClumps and must set together").throw
+  };
 	thisClump = 0;
 	nClumps = 1;
 };
 
 if((0>thisClump) || (thisClump>=nClumps)) {
-	var msg="Invalid clumps! % %".format(thisClump, nClumps);
-	if(~exitWhenDone) {
-		msg.postln; 2.exit; this.halt;
-	} {
-		Error(msg).throw;
-	};
+	Error("Invalid clumps! % %".format(thisClump, nClumps)).throw
 };
 
 if(File.exists(~testProto).not) {
@@ -50,7 +49,9 @@ if(nClumps > 1) {
 	"dividing test suite into % clumps and testing clump index %".format(nClumps, thisClump).postln;
 };
 
-~verboseSetup = false; // true or false
+// FIXME !!!!!!! set to false !!!!!!!!
+~verboseSetup = true; // true or false
+// FIXME !!!!!!! set to false !!!!!!!!
 
 ~useColors = \Document.asClass.isNil; // use colors if we're running outside of the IDE
 
@@ -94,16 +95,23 @@ if(nClumps > 1) {
 	testsDict;
 };
 
-~selectThisTestClump = {|tests,thisClump,nClumps|
-	tests.sort.clump(tests.size()/nClumps).at(thisClump) ?? #[];
+~selectThisTestClump = {|tests|
+  var sortedTests = tests.as(Array).sort;
+  var nTests = sortedTests.size();
+  // if this is less than 1, all tests will be in the first clump
+  var testsPerClump = (nTests/nClumps).asInteger;
+  var clumps = sortedTests.clump(testsPerClump);
+  var actualNClumps = clumps.size();
+  if (actualNClumps > nClumps) {
+	  Error("Partitioned tests into too many clumps! Expected %, actual %.".format(nClumps, actualNClumps)).throw
+	};
+	clumps.at(thisClump) ?? #[];
 };
 
 ~testrun = {|protoFile, resultFile|
 	var tests = ~getTestRecord.(protoFile);
 	var skipped, toExpand, toExclude;
 	var currentSuite = "";
-
-	// try {
 
 	UnitTest.findTestClasses();
 
@@ -179,7 +187,7 @@ if(nClumps > 1) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
-	tests = ~selectThisTestClump.(tests, thisClump, nClumps);
+	tests = ~selectThisTestClump.(tests);
 
 	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
@@ -279,4 +287,13 @@ if(nClumps > 1) {
 		0.exit;
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
+} { |error| //catch
+  if(~exitWhenDone) {
+    error.postln;
+    2.exit;
+    this.halt;
+  } {
+    error.throw;
+  };
+};
 )

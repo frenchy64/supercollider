@@ -93,6 +93,9 @@ TestArray : UnitTest {
 
 		#[
 			// arsize, clumpsize -- different sizes to test:
+			[100,     -1], // all elements in first clump if <1
+			[100,      0],
+			[100,      1],
 			[100,     10],
 			[121,     11]
 		].do{ |settings|
