@@ -8,25 +8,36 @@
 // 4. the number of test partitions
 // - default: 1 (must provide if partition provided)
 (
+var thisClump, nClumps;
 ~exitWhenDone = false;
+~exitCode = 0;
 if(thisProcess.argv.size > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
 	if(thisProcess.argv.size > 2) {
-		~thisClump = thisProcess.argv[2].asInteger();
-		~nClumps = thisProcess.argv[3].asInteger();
-	} {
-		~thisClump = 0;
-		~nClumps = 1;
+		thisClump = thisProcess.argv[2].asInteger();
+		nClumps = thisProcess.argv[3].asInteger();
 	};
 	~exitWhenDone = true;
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";
 	// ~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_all.scd"; // for testing
 	~testResult = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "run" +/+ "test_result.scxtar";
-	~thisClump = 0;
-	~nClumps = 1;
+};
+
+thisClump ?? {
+	thisClump = 0;
+	nClumps = 1;
+};
+
+if(0>thisClump || thisClump>=nClumps) {
+  var msg="Invalid clumps! % %".format(thisClump, nClumps);
+	if(~exitWhenDone) {
+    msg.postln; 2.exit; this.halt;
+	} {
+    Error(msg).throw;
+  };
 };
 
 if(File.exists(~testProto).not) {
@@ -35,7 +46,10 @@ if(File.exists(~testProto).not) {
 
 "~testProto path: %".format(~testProto).postln;
 "~testResult path: %".format(~testResult).postln;
-"clump % of %".format(~thisClump, ~nClumps).postln;
+
+if(nClumps > 1) {
+	"dividing test suite into % clumps and testing clump index %".format(nClumps, thisClump).postln;
+};
 
 ~verboseSetup = false; // true or false
 
@@ -91,7 +105,7 @@ if(File.exists(~testProto).not) {
 	var skipped, toExpand, toExclude;
 	var currentSuite = "";
 
-	// try {
+	// try
 
 	UnitTest.findTestClasses();
 
@@ -112,6 +126,7 @@ if(File.exists(~testProto).not) {
 		};
 
 		if (class.isNil) {
+			~exitCode = 1;
 			wildcardTest[\error] = "Class % not found".format(class);
 			wildcardTest[\completed] = true;
 			// ~writeResult.(test_record, file);
@@ -167,7 +182,7 @@ if(File.exists(~testProto).not) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
-	tests = ~selectThisTestClump.(tests, ~thisClump, ~nClumps);
+	tests = ~selectThisTestClump.(tests, thisClump, nClumps);
 
 	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
@@ -197,6 +212,7 @@ if(File.exists(~testProto).not) {
 				class = test[\suite].asSymbol.asClass;
 				testname = test[\test].asSymbol;
 				if (class.isNil) {
+					~exitCode = 1;
 					test[\error] = "Class % not found".format(class);
 					test[\completed] = true;
 					~writeResult.(tests, resultFile);
@@ -237,6 +253,7 @@ if(File.exists(~testProto).not) {
 							))
 						};
 						newFailures.do {|fail|
+							~exitCode = 1;
 							test[\results].add((
 								\pass: false,
 								\test: ("" ++ fail.message.split($\n)[0])[0..1000],
@@ -246,6 +263,7 @@ if(File.exists(~testProto).not) {
 
 						~writeResult.(tests, resultFile);
 					} {
+						~exitCode = 1;
 						test[\error] = "Test not found.";
 						test[\completed] = true;
 						~writeResult.(tests, resultFile);
@@ -262,9 +280,8 @@ if(File.exists(~testProto).not) {
 {
 	~testrun.(~testProto, ~testResult);
 	"\n\n******** DONE ********\n\n".postln;
-	// 0.exit;
 	if(~exitWhenDone) {
-		0.exit;
+		~exitCode.exit;
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
 )
