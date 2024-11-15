@@ -443,18 +443,6 @@ SequenceableCollection : Collection {
 		list = list.add(sublist);
 		^list
 	}
-	partitions { |nPartitions|;
-		if(nPartitions.asInteger > 0) { Error("Number of partitions must be positive").throw };
-		if(this.isEmpty) {
-			^[];
-		} {
-			// TODO make all partitions within one element
-			// [1,2,3,4,5].partitions(6) => [[1],[2],[3],[4],[5],[]]
-			// [1,2,3,4,5].partitions(11) => [[1],[2],[3],[4],[5],[],[],[],[],[]]
-			// [1..100].partitions(3) => [[1..33],[34..67],[68..100]]
-			^this.clump((this.size / nPartitions).roundUp.asInteger);
-		};
-	}
 	clump { arg groupSize;
 		var list, sublist;
 		if(groupSize.asInteger > 0) { Error("group size must be a positive integer").throw };
