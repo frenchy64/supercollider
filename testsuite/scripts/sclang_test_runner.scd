@@ -105,7 +105,7 @@ if(nClumps > 1) {
   });
   var nTests = sortedTests.size();
   // if this is less than 1, all tests will be in the first clump
-  var testsPerClump = (nTests/nClumps).asInteger;
+  var testsPerClump = (nTests/nClumps).ceil;
   var clumps = sortedTests.clump(testsPerClump);
   var actualNClumps = clumps.size();
   if (actualNClumps > nClumps) {
@@ -296,7 +296,7 @@ if(nClumps > 1) {
 }.forkIfNeeded(AppClock);
 } { |error| //catch
   if(~exitWhenDone) {
-    error.postln;
+    error.errorString.postln;
     2.exit;
     this.halt;
   } {
