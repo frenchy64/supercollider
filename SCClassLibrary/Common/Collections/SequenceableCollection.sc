@@ -444,8 +444,10 @@ SequenceableCollection : Collection {
 		^list
 	}
 	clump { arg groupSize;
-		var list = Array.new((this.size / groupSize).roundUp.asInteger);
-		var sublist = this.species.new(groupSize);
+		var list, sublist;
+		if(groupSize.asInteger > 0) { Error("group size must be a positive integer").throw };
+		list = Array.new((this.size / groupSize).roundUp.asInteger);
+		sublist = this.species.new(groupSize);
 		this.do({ arg item;
 			sublist.add(item);
 			if (sublist.size >= groupSize, {

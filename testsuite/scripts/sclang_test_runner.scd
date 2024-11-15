@@ -104,10 +104,12 @@ if(nClumps > 1) {
     (a[\suite]<b[\suite]) && (a[\test]<b[\test])
   });
   var nTests = sortedTests.size();
-  // if this is less than 1, all tests will be in the first clump.
-  // ceil to ensure we don't create too many clumps at the risk of
+  // over allocate earlier clumps to ensure we don't create too many clumps at the risk of
   // slightly underallocating the final clump.
-  var testsPerClump = (nTests/nClumps).ceil;
+  var testsPerClump = (nTests/nClumps).asInteger+1;
+  if (testsPerClump > 0) {
+	  Error("Must have at least one test per clump! %".format(testsPerClump)).throw
+	};
   var clumps = sortedTests.clump(testsPerClump);
   var actualNClumps = clumps.size();
   if (actualNClumps > nClumps) {
