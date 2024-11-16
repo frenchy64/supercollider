@@ -95,9 +95,11 @@ if(nClumps > 1) {
 	testsDict;
 };
 
-~selectThisTestClump = {|tests,thisClump,nClumps|
+~selectThisTestClump = {|tests|
   var sortedTests, nTests, minTestsPerClump, extraTestsToDistribute, groupSizes
     clumps, actualNClumps;
+
+  // first sort tests for predictable test partitioning
   sortedTests = tests.as(Array).sort({
     |a,b|
     if((a[\suite]==b[\suite]) && a[\test]==(b[\test])) {
@@ -105,8 +107,13 @@ if(nClumps > 1) {
     };
     (a[\suite]<b[\suite]) && (a[\test]<b[\test])
   });
+
   nTests = sortedTests.size();
   minTestsPerClump = (nTests/nClumps).asInteger;
+
+  // now we partition the tests. each partition will have
+  // minTestsPerClump or minTestsPerClump+1 tests in it, with
+  // larger partitions occuring first.
   extraTestsToDistribute = nTests-(minTestsPerClump*nClumps);
   if (extraTestsToDistribute>nClumps) {
     Error("Too many tests left over to distribute evenly").throw;
@@ -116,13 +123,19 @@ if(nClumps > 1) {
     groupSizes[i] = groupSizes[i]+1;
   });
   clumps = sortedTests.clumps(groupSizes);
+
+  // double check that we won't miss any tests, assuming other jobs
+  // will pick the the other clumps.
   actualNClumps = clumps.size();
   if (actualNClumps > nClumps) {
 	  Error("Partitioned tests into too many clumps! Expected %, actual %.".format(nClumps, actualNClumps)).throw
 	};
-  if (tests.as(Set) != clumps.flatten.as(Set)) {
-	  Error("Partitioning tests is a lossy operation! Missing tests: %".format(tests.as(Set).difference(clumps.flatten).throw
+  if (tests != clumps.flatten) {
+	  Error("Partitioning tests is a lossy operation!").throw
   };
+
+  // if the number of tests is less than nClumps, there will
+  // exist clumps in index 0..(nClumps-1) that will be nil.
 	clumps.at(thisClump) ?? #[];
 };
 
@@ -205,7 +218,7 @@ if(nClumps > 1) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
-	tests = ~selectThisTestClump.(tests, thisClump, nClumps);
+	tests = ~selectThisTestClump.(tests);
 
 	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
