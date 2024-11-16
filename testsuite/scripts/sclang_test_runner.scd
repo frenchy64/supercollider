@@ -96,22 +96,27 @@ if(nClumps > 1) {
 };
 
 ~selectThisTestClump = {|tests|
-  var sortedTests = tests.as(Array).sort({
+  var sortedTests, nTests, minTestsPerClump, extraTestsToDistribute, groupSizes
+    clumps, actualNClumps;
+  sortedTests = tests.as(Array).sort({
     |a,b|
     if((a[\suite]==b[\suite]) && a[\test]==(b[\test])) {
       Error("Duplicate tests! % %".format(a, b)).throw
     };
     (a[\suite]<b[\suite]) && (a[\test]<b[\test])
   });
-  var nTests = sortedTests.size();
-  // over allocate earlier clumps to ensure we don't create too many clumps at the risk of
-  // slightly underallocating the final clump.
-  var testsPerClump = (nTests/nClumps).asInteger+1;
-  if (testsPerClump > 0) {
-	  Error("Must have at least one test per clump! %".format(testsPerClump)).throw
-	};
-  var clumps = sortedTests.clump(testsPerClump);
-  var actualNClumps = clumps.size();
+  nTests = sortedTests.size();
+  minTestsPerClump = (nTests/nClumps).asInteger;
+  extraTestsToDistribute = nTests-(minTestsPerClump*nClumps);
+  if (extraTestsToDistribute>nClumps) {
+    Error("Too many tests left over to distribute evenly").throw;
+  };
+  groupSizes = Array.fill(nClumps, minTestsPerClump);
+  extraTestsToDistribute.do({|i|
+    groupSizes[i] = groupSizes[i]+1;
+  });
+  clumps = sortedTests.clumps(groupSizes);
+  actualNClumps = clumps.size();
   if (actualNClumps > nClumps) {
 	  Error("Partitioned tests into too many clumps! Expected %, actual %.".format(nClumps, actualNClumps)).throw
 	};
