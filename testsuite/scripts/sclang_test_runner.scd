@@ -95,7 +95,7 @@ if(nClumps > 1) {
 	testsDict;
 };
 
-~selectThisTestClump = {|tests|
+~selectThisTestClump = {|tests,thisClump,nClumps|
   var sortedTests, nTests, minTestsPerClump, extraTestsToDistribute, groupSizes
     clumps, actualNClumps;
   sortedTests = tests.as(Array).sort({
@@ -120,6 +120,9 @@ if(nClumps > 1) {
   if (actualNClumps > nClumps) {
 	  Error("Partitioned tests into too many clumps! Expected %, actual %.".format(nClumps, actualNClumps)).throw
 	};
+  if (tests.as(Set) != clumps.flatten.as(Set)) {
+	  Error("Partitioning tests is a lossy operation! Missing tests: %".format(tests.as(Set).difference(clumps.flatten).throw
+  };
 	clumps.at(thisClump) ?? #[];
 };
 
@@ -202,7 +205,7 @@ if(nClumps > 1) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
-	tests = ~selectThisTestClump.(tests);
+	tests = ~selectThisTestClump.(tests, thisClump, nClumps);
 
 	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
