@@ -87,12 +87,25 @@ TestArray : UnitTest {
 		}
 	}
 
+	test_invalid_clump_size {
+		[0,0.5,-1].do { |groupSize|
+			try {
+				[].clump(groupSize);
+				this.assert(false, "expected error: %".format(groupSize));
+			} { |error|
+				this.assertEquals(Error.errorString, "group size must be a positive integer",
+					"unexpected error message"));
+			};
+	}
+
 
 	test_arraystats {
 		var arsize, clumpsize, a, aclumped, ascaled, arev, mean, median, sd;
 
 		#[
 			// arsize, clumpsize -- different sizes to test:
+			[100,      1],
+			[  1,    100],
 			[100,     10],
 			[121,     11]
 		].do{ |settings|

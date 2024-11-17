@@ -9,6 +9,14 @@ on:
 jobs:
   test-linux:
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # the length of this array determines how many jobs are used to partition the jobs.
+        # the array contents are not used (suggest just counting up from 0).
+        # array must be non-empty, otherwise tests won't run!
+        id: [0,1,2,3,4]
+    name: "Test Linux (tests.clumps(tests.size/${{ strategy.job-total }})[${{ strategy.job-index }}])"
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       ARTIFACT_FILE: ${{ inputs.artifact-file }}
@@ -62,7 +70,7 @@ jobs:
           # add path
           $SCLANG $SCRIPT_ADD_PATH $TESTS_PATH
           # run tests
-          timeout 1200 $SCLANG $SCRIPT_RUN_TESTS $TEST_LIST_PROTO $TEST_LIST_RESULT
+          timeout 1200 $SCLANG $SCRIPT_RUN_TESTS $TEST_LIST_PROTO $TEST_LIST_RESULT ${{ strategy.job-index }} ${{ strategy.job-total }}
 
       - name: Post test results
         shell: bash

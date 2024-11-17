@@ -1,15 +1,41 @@
-// this script is meant to be run with two arguments: path to test prototype indicating tests to be run, and path to test result
+// this script is meant to be run with four arguments:
+// 1. path to test prototype indicating tests to be run
+// - default: "./test_run_proto_gha.scd"
+// 2. path to test result
+// - default: "./test_result.scxtar"
+// 3. which partition of the tests should be run (zero based)
+// - default: 0
+// 4. the number of test partitions
+// - default: 1 (must provide if partition provided)
 (
-~exitWhenDone = false;
-if(thisProcess.argv.size > 0) {
+var thisClump, nClumps, nargv = thisProcess.argv.size;
+~exitWhenDone = nargv > 0;
+try {
+if(nargv > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
-	~exitWhenDone = true;
+	if(nargv > 2) {
+		thisClump = thisProcess.argv[2].asInteger();
+		nClumps = thisProcess.argv[3].asInteger();
+	};
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";
 	// ~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_all.scd"; // for testing
 	~testResult = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "run" +/+ "test_result.scxtar";
+};
+
+thisClump ?? {
+  if(nClumps.notNil) {
+    // this should be unreachable
+    Error("thisClump and nClumps and must set together").throw
+  };
+	thisClump = 0;
+	nClumps = 1;
+};
+
+if((0>thisClump) || (thisClump>=nClumps)) {
+	Error("Invalid clumps! % %".format(thisClump, nClumps)).throw
 };
 
 if(File.exists(~testProto).not) {
@@ -19,7 +45,13 @@ if(File.exists(~testProto).not) {
 "~testProto path: %".format(~testProto).postln;
 "~testResult path: %".format(~testResult).postln;
 
-~verboseSetup = false; // true or false
+if(nClumps > 1) {
+	"dividing test suite into % clumps and testing clump index %".format(nClumps, thisClump).postln;
+};
+
+// FIXME !!!!!!! set to false !!!!!!!!
+~verboseSetup = true; // true or false
+// FIXME !!!!!!! set to false !!!!!!!!
 
 ~useColors = \Document.asClass.isNil; // use colors if we're running outside of the IDE
 
@@ -63,12 +95,33 @@ if(File.exists(~testProto).not) {
 	testsDict;
 };
 
+~selectThisTestClump = {|tests|
+  var sortedTests = tests.as(Array).sort({
+    |a,b|
+    if((a[\suite]==b[\suite]) && a[\test]==(b[\test])) {
+      Error("Duplicate tests! % %".format(a, b)).throw
+    };
+    (a[\suite]<b[\suite]) && (a[\test]<b[\test])
+  });
+  var nTests = sortedTests.size();
+  // over allocate earlier clumps to ensure we don't create too many clumps at the risk of
+  // slightly underallocating the final clump.
+  var testsPerClump = (nTests/nClumps).asInteger+1;
+  if (testsPerClump > 0) {
+	  Error("Must have at least one test per clump! %".format(testsPerClump)).throw
+	};
+  var clumps = sortedTests.clump(testsPerClump);
+  var actualNClumps = clumps.size();
+  if (actualNClumps > nClumps) {
+	  Error("Partitioned tests into too many clumps! Expected %, actual %.".format(nClumps, actualNClumps)).throw
+	};
+	clumps.at(thisClump) ?? #[];
+};
+
 ~testrun = {|protoFile, resultFile|
 	var tests = ~getTestRecord.(protoFile);
 	var skipped, toExpand, toExclude;
 	var currentSuite = "";
-
-	// try {
 
 	UnitTest.findTestClasses();
 
@@ -143,6 +196,10 @@ if(File.exists(~testProto).not) {
 	// test_record["tests"] = tests;
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
+
+	tests = ~selectThisTestClump.(tests);
+
+	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
 	"\n\n\t*** Running the tests ***\n\n".post;
 
@@ -238,6 +295,16 @@ if(File.exists(~testProto).not) {
 	// 0.exit;
 	if(~exitWhenDone) {
 		0.exit;
+    this.halt;
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
+} { |error| //catch
+  if(~exitWhenDone) {
+    error.errorString.postln;
+    2.exit;
+    this.halt;
+  } {
+    error.throw;
+  };
+};
 )
