@@ -120,4 +120,4 @@ jobs:
       - name: Post combined results
         shell: bash
         run: |
-          timeout 1m $SCLANG $SCRIPT_PRINT_RESULTS 'testsuite/scripts/run/gha_result_*.scxtar'
+          timeout 1m $SCLANG $SCRIPT_PRINT_RESULTS $(echo testsuite/scripts/run/gha_result_*.scxtar)
