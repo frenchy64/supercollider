@@ -9,7 +9,7 @@
 // - default: 1 (must provide if partition provided)
 (
 var thisClump, nClumps, selectNthClump, sortTests, selectThisTestClump, splitIntoClumps,
-    nargv = thisProcess.argv.size;
+	nargv = thisProcess.argv.size;
 ~exitWhenDone = nargv > 0;
 try {
 if(nargv > 0) {
@@ -423,12 +423,12 @@ assertScrambled.("selectThisTestClump 6",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTes
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
 } { |error| //catch
-  if(~exitWhenDone) {
-    error.errorString.postln;
-    2.exit;
-    this.halt;
-  } {
-    error.throw;
-  };
+	if(~exitWhenDone) {
+		error.errorString.postln;
+		2.exit;
+		this.halt;
+	} {
+		error.throw;
+	};
 };
 )
