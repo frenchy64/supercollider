@@ -24,7 +24,7 @@ jobs:
       TESTS_PATH: ${{ github.workspace }}/testsuite/classlibrary
       SCLANG: ${{ github.workspace }}/build/Install/SuperCollider/sclang
       TEST_LIST_PROTO: ${{ github.workspace }}/testsuite/scripts/test_run_proto_gha.scd
-      TEST_LIST_RESULT: ${{ github.workspace }}/testsuite/scripts/run/gha_result.scxtar
+      TEST_LIST_RESULT: ${{ github.workspace }}/testsuite/scripts/run/gha_result_${{ strategy.job-index }}.scxtar
       SCRIPT_RUN_TESTS: ${{ github.workspace }}/testsuite/scripts/sclang_test_runner.scd
       SCRIPT_ADD_PATH: ${{ github.workspace }}/testsuite/scripts/add_include_path.scd
       SCRIPT_PRINT_RESULTS: ${{ github.workspace }}/testsuite/scripts/print_results.scd
@@ -76,3 +76,10 @@ jobs:
         shell: bash
         run: |
           $SCLANG $SCRIPT_PRINT_RESULTS $TEST_LIST_RESULT
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-list-result
+          path: ${{ env.TEST_LIST_RESULT }}
