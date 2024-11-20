@@ -1,23 +1,25 @@
 (
 var makeRed, makeYellow, makeGreen, makeBold;
 var passed = 0, failed = 0, skipped = 0;
-var results, path, tmpPath, file;
+var results, paths;
 var useColors = \Document.asClass.isNil; // use colors if we're running sclang directly
 var exitWhenDone = \Document.asClass.isNil; // exit if we're running sclang directly
 var failedList = List();
 
 if(thisProcess.argv.size > 0) {
-	path = thisProcess.argv[0];
+	paths = thisProcess.argv;
 } {
-	path = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "run" +/+ "test_result.scxtar";
+	paths = [(PathName(thisProcess.nowExecutingPath).pathOnly +/+ "run" +/+ "test_result.scxtar")];
 };
 
-if(File.exists(path).not) {
-	"No file found at %".format(path).error;
-	if(exitWhenDone) {2.exit; this.halt};
-};
+paths.do({|path|
+	if(File.exists(path).not) {
+		"No file found at %".format(path).error;
+		if(exitWhenDone) {2.exit; this.halt};
+	}
+});
 
-results = Object.readArchive(path);
+results = paths.collect({|path|Object.readArchive(path)}).flatten(1);
 
 makeRed = {|str|
 	if(useColors) {
