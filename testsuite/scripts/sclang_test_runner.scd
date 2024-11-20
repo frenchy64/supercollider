@@ -146,7 +146,7 @@ sortTests = {|tests|
 		} {
 			(a[\suite]<b[\suite])
 		}
-});
+	});
 };
 
 selectThisTestClump = {|tests,thisClump,nClumps|
@@ -174,9 +174,8 @@ assertThrows = {|id,f|
 		result="no throw"
 	} { |error|
 		result="throw"
-	}
-};
-assertEquals.("assertThrows %".format(id),result,"throw");
+	};
+	assertEquals.("assertThrows %".format(id),result,"throw");
 },
 s0t0 = Dictionary[\suite->"suite0", \test->"test0"],
 s0t1 = Dictionary[\suite->"suite0", \test->"test1"],
