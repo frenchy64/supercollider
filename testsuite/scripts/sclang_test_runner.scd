@@ -46,9 +46,7 @@ if(nClumps > 1) {
 	"dividing test suite into % clumps and testing clump index %".format(nClumps, thisClump).postln;
 };
 
-// FIXME !!!!!!! set to false !!!!!!!!
-~verboseSetup = true; // true or false
-// FIXME !!!!!!! set to false !!!!!!!!
+~verboseSetup = false; // true or false
 
 ~useColors = \Document.asClass.isNil; // use colors if we're running outside of the IDE
 
@@ -157,17 +155,12 @@ selectThisTestClump = {|tests,thisClump,nClumps|
 
 ({
 var assertEquals = {|id,actual,expected|
-  //~verboseSetup.if({"assertEquals(\"%\", %, %)".format(id,actual,expected).postln});
   if((actual == expected).not){
-    //~verboseSetup.if({"throwing %".format(id).postln});
     Error("fail %: % != %".format(id,actual,expected)).throw
-  } {
-    //~verboseSetup.if({"ok %".format(id).postln});
   }
 },
 assertScrambled = {|id,c,f,expected|
   var times = c.size*2.max(10);
-  //~verboseSetup.if({"assertScrambled(\"%\", %, ?, %)".format(id,c,expected).postln});
   if(times<10){ Error("bad times %".format(times)).throw };
   times.do({|i|
     var input = c.scramble;
@@ -176,7 +169,6 @@ assertScrambled = {|id,c,f,expected|
 },
 assertThrows = {|id,f|
   var result;
-  //~verboseSetup.if({"assertThrows(\"%\", ?)".format(id).postln});
   try {
     f.value;
     result="no throw"
