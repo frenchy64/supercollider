@@ -85,7 +85,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-list-result
+          name: test-list-result-ubuntu-22.04-${{ strategy.job-index }}
           path: ${{ env.TEST_LIST_RESULT }}
 
   results:
