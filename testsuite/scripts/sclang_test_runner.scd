@@ -164,6 +164,7 @@ if(nClumps > 1) {
 ~assertThrows.("splitIntoClumps 16",{~splitIntoClumps.([],0)});
 ~assertThrows.("splitIntoClumps 17",{~splitIntoClumps.([],-1)});
 ~assertThrows.("splitIntoClumps 18",{~splitIntoClumps.([],1.5)});
+~assertThrows.("splitIntoClumps 19",{~splitIntoClumps.([],"3")});
 
 ~selectNthClump = {|sortedTests,thisClump,nClumps|
   if(thisClump.isInteger.not || nClumps.isInteger.not || (0>thisClump) || (thisClump>=nClumps)) {
@@ -186,6 +187,7 @@ if(nClumps > 1) {
 ~assertThrows.("selectNthClump 11",{~selectNthClump.([0,1,2,3,4],4,4)});
 ~assertThrows.("selectNthClump 12",{~selectNthClump.([0,1,2,3,4],5,4)});
 ~assertThrows.("selectNthClump 13",{~selectNthClump.([0,1,2,3,4],1.5,4)});
+~assertThrows.("selectNthClump 14",{~selectNthClump.([0,1,2,3,4],"1","4")});
 
 ~selectThisTestClump = {|tests,thisClump,nClumps|
   // first sort tests for predictable test partitioning
