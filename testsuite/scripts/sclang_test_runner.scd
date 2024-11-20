@@ -34,10 +34,6 @@ thisClump ?? {
 	nClumps = 1;
 };
 
-if((0>thisClump) || (thisClump>=nClumps)) {
-	Error("Invalid clumps! % %".format(thisClump, nClumps)).throw
-};
-
 if(File.exists(~testProto).not) {
 	Error("Test prototype file doesn't exist at %".format(~testProto)).throw
 };
@@ -100,10 +96,24 @@ if(nClumps > 1) {
     Error("fail %: % != %".format(id,a,b)).throw
   }
 };
+~assertThrows = {|id,f|
+  var result;
+  try {
+    f.value;
+    result="no throw"
+  } { |error|
+    result="throw"
+  };
+  ~assertEquals.("assertThrows %".format(id),result,"throw");
+};
 
 ~splitIntoClumps = {|sortedTests,nClumps|
   var nTests, minTestsPerClump, extraTestsToDistribute, groupSizes,
     clumps, actualNClumps, nClumpsBeforePadding;
+
+  if((nClumps.isInteger.not) || (nClumps<1)) {
+    Error("invalid nClumps %".format(nClumps)).throw;
+  };
 
   nTests = sortedTests.size();
   minTestsPerClump = (nTests/nClumps).asInteger;
@@ -149,22 +159,32 @@ if(nClumps > 1) {
 ~assertEquals.("splitIntoClumps 11",~splitIntoClumps.([0,1,2,3,4],2),[[0,1,2],[3,4]]);
 ~assertEquals.("splitIntoClumps 12",~splitIntoClumps.([0,1,2,3,4],1),[[0,1,2,3,4]]);
 ~assertEquals.("splitIntoClumps 13",~splitIntoClumps.([0,1,2,3,4,5,6,7,8,9,10],2),[[0,1,2,3,4,5],[6,7,8,9,10]]);
+~assertEquals.("splitIntoClumps 14",~splitIntoClumps.([],2),[[],[]]);
+~assertEquals.("splitIntoClumps 15",~splitIntoClumps.([],1),[[]]);
+~assertThrows.("splitIntoClumps 16",{~splitIntoClumps.([],0)});
+~assertThrows.("splitIntoClumps 17",{~splitIntoClumps.([],-1)});
 
 ~selectNthClump = {|sortedTests,thisClump,nClumps|
-  // if the number of tests is less than nClumps, there will
-  // exist clumps in index 0..(nClumps-1) that will be nil.
-	~splitIntoClumps.(sortedTests,nClumps).at(thisClump) ?? #[];
+  if(thisClump.isInteger.not || nClumps.isInteger.not || (0>thisClump) || (thisClump>=nClumps)) {
+    Error("Invalid clumps! % %".format(thisClump, nClumps)).throw
+  };
+	~splitIntoClumps.(sortedTests,nClumps).at(thisClump)
 };
 
 ~assertEquals.("selectNthClump 0",~selectNthClump.([0,1,2,3],0,4),[0]);
 ~assertEquals.("selectNthClump 1",~selectNthClump.([0,1,2,3],1,4),[1]);
 ~assertEquals.("selectNthClump 2",~selectNthClump.([0,1,2,3],2,4),[2]);
 ~assertEquals.("selectNthClump 3",~selectNthClump.([0,1,2,3],3,4),[3]);
-~assertEquals.("selectNthClump 4",~selectNthClump.([0,1,2,3,4],0,4),[0,1]); //FIXME
+~assertEquals.("selectNthClump 4",~selectNthClump.([0,1,2,3,4],0,4),[0,1]);
 ~assertEquals.("selectNthClump 5",~selectNthClump.([0,1,2,3,4],1,4),[2]);
 ~assertEquals.("selectNthClump 6",~selectNthClump.([0,1,2,3,4],2,4),[3]);
 ~assertEquals.("selectNthClump 7",~selectNthClump.([0,1,2,3,4],3,4),[4]);
-~assertEquals.("selectNthClump 8",~selectNthClump.([0,1,2,3,4],4,4),[]);
+~assertThrows.("selectNthClump 8",{~selectNthClump.([0,1,2,3,4],4,4)});
+~assertThrows.("selectNthClump 9",{~selectNthClump.([0,1,2,3,4],-1,4)});
+~assertThrows.("selectNthClump 10",{~selectNthClump.([0,1,2,3,4],0,-1)});
+~assertThrows.("selectNthClump 11",{~selectNthClump.([0,1,2,3,4],4,4)});
+~assertThrows.("selectNthClump 12",{~selectNthClump.([0,1,2,3,4],5,4)});
+~assertThrows.("selectNthClump 13",{~selectNthClump.([0,1,2,3,4],1.5,4)});
 
 ~selectThisTestClump = {|tests,thisClump,nClumps|
   // first sort tests for predictable test partitioning
