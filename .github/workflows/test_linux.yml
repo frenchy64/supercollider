@@ -88,7 +88,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-list-result-${{ inputs.os }}-${{ strategy.job-index }}
+          name: test-list-result-${{ inputs.os }}-${{ inputs.artifact-file }}-${{ strategy.job-index }}
           path: ${{ env.TEST_LIST_RESULT }}
 
   results:
