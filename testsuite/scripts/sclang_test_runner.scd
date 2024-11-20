@@ -163,6 +163,7 @@ if(nClumps > 1) {
 ~assertEquals.("splitIntoClumps 15",~splitIntoClumps.([],1),[[]]);
 ~assertThrows.("splitIntoClumps 16",{~splitIntoClumps.([],0)});
 ~assertThrows.("splitIntoClumps 17",{~splitIntoClumps.([],-1)});
+~assertThrows.("splitIntoClumps 18",{~splitIntoClumps.([],1.5)});
 
 ~selectNthClump = {|sortedTests,thisClump,nClumps|
   if(thisClump.isInteger.not || nClumps.isInteger.not || (0>thisClump) || (thisClump>=nClumps)) {
