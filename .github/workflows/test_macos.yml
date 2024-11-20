@@ -5,10 +5,21 @@ on:
       artifact-file:
         required: true
         type: string
+      os:
+        required: true
+        type: string
+
+env:
+  INSTALL_PATH: build/Install
+  ARTIFACT_FILE: ${{ inputs.artifact-file }}
+  SCLANG: build/Install/SuperCollider/SuperCollider.app/Contents/MacOS/sclang
+  SCRIPT_ADD_PATH: testsuite/scripts/add_include_path.scd
+  SCRIPT_PRINT_RESULTS: testsuite/scripts/print_results.scd
+  SCRIPT_RUN_TESTS: testsuite/scripts/sclang_test_runner.scd
 
 jobs:
-  test-macos:
-    runs-on: macos-12
+  test:
+    runs-on: ${{ inputs.os }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -19,15 +30,9 @@ jobs:
         id: [0,1,2,3,4]
     name: "Test macOS (${{ strategy.job-index }}th test clump)"
     env:
-      INSTALL_PATH: ${{ github.workspace }}/build/Install
-      ARTIFACT_FILE: ${{ inputs.artifact-file }}
       TESTS_PATH: ${{ github.workspace }}/testsuite/classlibrary
-      SCLANG: ${{ github.workspace }}/build/Install/SuperCollider/SuperCollider.app/Contents/MacOS/sclang
-      TEST_LIST_PROTO: ${{ github.workspace }}/testsuite/scripts/test_run_proto_gha.scd
-      TEST_LIST_RESULT: ${{ github.workspace }}/testsuite/scripts/run/gha_result_${{ strategy.job-index }}.scxtar
-      SCRIPT_RUN_TESTS: ${{ github.workspace }}/testsuite/scripts/sclang_test_runner.scd
-      SCRIPT_ADD_PATH: ${{ github.workspace }}/testsuite/scripts/add_include_path.scd
-      SCRIPT_PRINT_RESULTS: ${{ github.workspace }}/testsuite/scripts/print_results.scd
+      TEST_LIST_PROTO: testsuite/scripts/test_run_proto_gha.scd
+      TEST_LIST_RESULT: testsuite/scripts/run/gha_result_${{ strategy.job-index }}.scxtar
 
     steps:
       - uses: actions/checkout@v4
@@ -77,3 +82,49 @@ jobs:
         with:
           name: test-list-result
           path: ${{ env.TEST_LIST_RESULT }}
+
+  results:
+    runs-on: ${{ inputs.os }}
+    if: always() && needs.test.outputs.job-total > 1
+    needs: test
+    timeout-minutes: 15
+    name: "Print combined macOS results"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false # don't need submodules for testing
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          path: testsuite/scripts/run
+          pattern: test-list-result-${{ inputs.os }}-${{ inputs.artifact-file }}-*
+          merge-multiple: true
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_FILE }}
+          path: ${{ env.INSTALL_PATH }}
+
+      - name: Extract artifact
+        run: |
+          cd "$INSTALL_PATH"
+          echo Contents of `pwd`:
+          ls
+          hdiutil attach $ARTIFACT_FILE
+          echo "mkdir SuperCollider"
+          mkdir SuperCollider
+          cp -R /Volumes/SuperCollider/* SuperCollider/
+
+      - name: Setup environment
+        env:
+          HOMEBREW_NO_ANALYTICS: 1
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+        run: brew install coreutils # to get 'timeout' utility
+
+      - name: Post combined results
+        shell: bash
+        run: |
+          timeout 1m $SCLANG $SCRIPT_PRINT_RESULTS $(echo testsuite/scripts/run/gha_result_*.scxtar)

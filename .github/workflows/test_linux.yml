@@ -18,7 +18,7 @@ env:
   SCRIPT_RUN_TESTS: testsuite/scripts/sclang_test_runner.scd
 
 jobs:
-  test-linux:
+  test:
     runs-on: ${{ inputs.os }}
     timeout-minutes: 15
     outputs:
@@ -32,9 +32,9 @@ jobs:
         id: [0,1,2,3,4]
     name: "Test Linux (${{ strategy.job-index }}th test clump)"
     env:
+      TESTS_PATH: ${{ github.workspace }}/testsuite/classlibrary
       TEST_LIST_PROTO: testsuite/scripts/test_run_proto_gha.scd
       TEST_LIST_RESULT: testsuite/scripts/run/gha_result_${{ strategy.job-index }}.scxtar
-      TESTS_PATH: ${{ github.workspace }}/testsuite/classlibrary
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,10 +93,10 @@ jobs:
 
   results:
     runs-on: ${{ inputs.os }}
-    if: always() && needs.test-linux.outputs.job-total > 1
-    needs: test-linux
+    if: always() && needs.test.outputs.job-total > 1
+    needs: test
     timeout-minutes: 15
-    name: Print combined results
+    name: "Print combined Linux results"
     steps:
       - uses: actions/checkout@v4
         with:

@@ -81,6 +81,7 @@ jobs:
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-macOS-x64.dmg"
+      os: "macos-12"
     secrets: inherit
 
   # test-windows:
