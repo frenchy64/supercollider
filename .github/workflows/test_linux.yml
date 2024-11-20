@@ -10,7 +10,6 @@ env:
   INSTALL_PATH: build/Install
   ARTIFACT_FILE: ${{ inputs.artifact-file }}
   SCLANG: build/Install/bin/sclang
-  TEST_LIST_RESULT_PREFIX: testsuite/scripts/run/gha_result_
   TESTS_PATH: testsuite/classlibrary
   SCRIPT_ADD_PATH: testsuite/scripts/add_include_path.scd
   SCRIPT_PRINT_RESULTS: testsuite/scripts/print_results.scd
@@ -32,7 +31,7 @@ jobs:
     name: "Test Linux (${{ strategy.job-index }}th test clump)"
     env:
       TEST_LIST_PROTO: testsuite/scripts/test_run_proto_gha.scd
-      TEST_LIST_RESULT: ${{ env.TEST_LIST_RESULT_PREFIX }}${{ strategy.job-index }}.scxtar
+      TEST_LIST_RESULT: testsuite/scripts/run/gha_result_${{ strategy.job-index }}.scxtar
     steps:
       - uses: actions/checkout@v4
         with:
@@ -102,7 +101,7 @@ jobs:
       - name: Download test results
         uses: actions/download-artifact@v4
         with:
-          pattern: ${{env.TEST_LIST_RESULT_PREFIX}}*
+          pattern: 'testsuite/scripts/run/gha_result_*.scxtar'
           merge-multiple: true
 
       - name: Download artifacts
@@ -121,4 +120,4 @@ jobs:
       - name: Post combined results
         shell: bash
         run: |
-          timeout 1m $SCLANG $SCRIPT_PRINT_RESULTS "${{env.TEST_LIST_RESULT_PREFIX}}*"
+          timeout 1m $SCLANG $SCRIPT_PRINT_RESULTS 'testsuite/scripts/run/gha_result_*.scxtar'
