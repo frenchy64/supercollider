@@ -185,10 +185,10 @@ assertThrows = {|id,f|
   };
   assertEquals.("assertThrows %".format(id),result,"throw");
 },
-s0t0 = Dictionary.newFrom([\suite, "suite0", \test, "test0"]),
-s0t1 = Dictionary.newFrom([\suite, "suite0", \test, "test1"]),
-s1t0 = Dictionary.newFrom([\suite, "suite1", \test, "test0"]),
-s1t1 = Dictionary.newFrom([\suite, "suite1", \test, "test1"]);
+s0t0 = Dictionary[\suite->"suite0", \test->"test0"],
+s0t1 = Dictionary[\suite->"suite0", \test->"test1"],
+s1t0 = Dictionary[\suite->"suite1", \test->"test0"],
+s1t1 = Dictionary[\suite->"suite1", \test->"test1"];
 
 //sanity checks
 if("fails"!=try{assertEquals.("should fail", false, true);"succeeds"}{|e|"fails"}){Error("assertEquals 0").throw;};

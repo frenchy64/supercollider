@@ -76,9 +76,6 @@ jobs:
             extra-cmake-flags: "-D LIBSCSYNTH=ON"
 
     name: macOS ${{ matrix.job-name }}
-    # FIXME !!!!!!!!!!!!!!! uncomment !!!!!!!!!!!!!!!
-    if: false
-    # FIXME !!!!!!!!!!!!!!! uncomment !!!!!!!!!!!!!!!
     env:
       BUILD_PATH: ${{ github.workspace }}/build
       INSTALL_PATH: ${{ github.workspace }}/build/Install

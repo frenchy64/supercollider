@@ -17,7 +17,7 @@ jobs:
         # the array contents are not used (suggest just counting up from 0).
         # array must be non-empty, otherwise tests won't run!
         id: [0,1,2,3,4]
-    name: "Test Linux (tests.clumps(tests.size/${{ strategy.job-total }})[${{ strategy.job-index }}])"
+    name: "Test Linux (${{ strategy.job-index }}th/{{ strategy.job-total }})"
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       ARTIFACT_FILE: ${{ inputs.artifact-file }}

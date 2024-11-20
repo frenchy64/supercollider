@@ -70,9 +70,6 @@ jobs:
             qt-modules: "qtpositioning"
             artifact-suffix: "win64-mingw" # set if needed - will trigger artifact upload
 
-    # FIXME !!!!!!!!!!!!!!! uncomment !!!!!!!!!!!!!!!
-    if: false
-    # FIXME !!!!!!!!!!!!!!! uncomment !!!!!!!!!!!!!!!
     name: Windows ${{ matrix.job-name }}
     env:
       BUILD_PATH: ${{ github.workspace }}/build
