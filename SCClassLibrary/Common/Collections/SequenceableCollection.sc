@@ -1252,8 +1252,35 @@ SequenceableCollection : Collection {
 		if (function.isNil) { function = { arg a, b; a <= b }; };
 		^this.mergeSort(function)
 	}
-	sortBy { arg key;
-		^this.sort({| a, b | a[key] <= b[key] })
+	sortBy { arg key, keys...;
+		var ks = keys.size;
+		if (ks==0) {
+			^this.sort({| a, b | a[key] <= b[key] })
+		} {
+			^this.sort({| a, b |
+				var i,result;
+				if(a[key] == b[key]) {
+					i = 0;
+					while{i<ks} {
+						var key = keys[i];
+						if(a[key]==b[key]) {
+							if (i==(ks-1)) {
+								result = a[key] < b[key]
+								i = ks;
+							} {
+								i = i+1;
+							}
+						} {
+					     	result = a[key] < b[key]
+							i = ks;
+						};
+					};
+					result;
+				} {
+					a[key] < b[key]
+				}
+			})
+		}
 	}
 	sortMap { arg function;
 		^this.sort({| a, b | function.value(a) <= function.value(b) })
