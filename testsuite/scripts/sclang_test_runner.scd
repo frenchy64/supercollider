@@ -95,18 +95,15 @@ if(nClumps > 1) {
 	testsDict;
 };
 
-~selectThisTestClump = {|tests|
-  var sortedTests, nTests, minTestsPerClump, extraTestsToDistribute, groupSizes,
-    clumps, actualNClumps;
+~assertEquals = {|id,a,b|
+  if(a!=b){
+    Error("fail %: % != %".format(id,a,b)).throw
+  }
+};
 
-  // first sort tests for predictable test partitioning
-  sortedTests = tests.as(Array).sort({
-    |a,b|
-    if((a[\suite]==b[\suite]) && a[\test]==(b[\test])) {
-      Error("Duplicate tests! % %".format(a, b)).throw
-    };
-    (a[\suite]<b[\suite]) && (a[\test]<b[\test])
-  });
+~splitIntoClumps = {|sortedTests,nClumps|
+  var nTests, minTestsPerClump, extraTestsToDistribute, groupSizes,
+    clumps, actualNClumps, nClumpsBeforePadding;
 
   nTests = sortedTests.size();
   minTestsPerClump = (nTests/nClumps).asInteger;
@@ -123,20 +120,63 @@ if(nClumps > 1) {
     groupSizes[i] = groupSizes[i]+1;
   });
   clumps = sortedTests.clumps(groupSizes);
+  //pad empty clumps
+  clumps = Array.fill(nClumps, {|i| clumps.at(i) ?? []});
 
   // double check that we won't miss any tests, assuming other jobs
   // will pick the the other clumps.
-  actualNClumps = clumps.size();
-  if (actualNClumps > nClumps) {
-	  Error("Partitioned tests into too many clumps! Expected %, actual %.".format(nClumps, actualNClumps)).throw
+  if (clumps.size() != nClumps) {
+	  Error("Partitioned tests into incorrect number of clumps! Expected %, actual %.".format(nClumps, clumps.size())).throw
 	};
-  if (tests.as(Set) != clumps.flatten.as(Set)) {
+  if (sortedTests.as(Set) != clumps.flatten.as(Set)) {
 	  Error("Partitioning tests is a lossy operation!").throw
   };
 
+  clumps
+};
+
+~assertEquals.("splitIntoClumps 00",~splitIntoClumps.([0,1,2,3],4),[[0],[1],[2],[3]]);
+~assertEquals.("splitIntoClumps 01",~splitIntoClumps.([0,1,2,3],5),[[0],[1],[2],[3],[]]);
+~assertEquals.("splitIntoClumps 02",~splitIntoClumps.([0,1,2,3],6),[[0],[1],[2],[3],[],[]]);
+~assertEquals.("splitIntoClumps 03",~splitIntoClumps.([0,1,2,3],3),[[0,1],[2],[3]]);
+~assertEquals.("splitIntoClumps 04",~splitIntoClumps.([0,1,2,3],2),[[0,1],[2,3]]);
+~assertEquals.("splitIntoClumps 05",~splitIntoClumps.([0,1,2,3],1),[[0,1,2,3]]);
+~assertEquals.("splitIntoClumps 06",~splitIntoClumps.([0,1,2,3],1),[[0,1,2,3]]);
+~assertEquals.("splitIntoClumps 07",~splitIntoClumps.([0,1,2,3,4],4),[[0,1],[2],[3],[4]]);
+~assertEquals.("splitIntoClumps 08",~splitIntoClumps.([0,1,2,3,4],5),[[0],[1],[2],[3],[4]]);
+~assertEquals.("splitIntoClumps 09",~splitIntoClumps.([0,1,2,3,4],6),[[0],[1],[2],[3],[4],[]]);
+~assertEquals.("splitIntoClumps 10",~splitIntoClumps.([0,1,2,3,4],3),[[0,1],[2,3],[4]]);
+~assertEquals.("splitIntoClumps 11",~splitIntoClumps.([0,1,2,3,4],2),[[0,1,2],[3,4]]);
+~assertEquals.("splitIntoClumps 12",~splitIntoClumps.([0,1,2,3,4],1),[[0,1,2,3,4]]);
+~assertEquals.("splitIntoClumps 13",~splitIntoClumps.([0,1,2,3,4,5,6,7,8,9,10],2),[[0,1,2,3,4,5],[6,7,8,9,10]]);
+
+~selectNthClump = {|sortedTests,thisClump,nClumps|
   // if the number of tests is less than nClumps, there will
   // exist clumps in index 0..(nClumps-1) that will be nil.
-	clumps.at(thisClump) ?? #[];
+	~splitIntoClumps.(sortedTests,nClumps).at(thisClump) ?? #[];
+};
+
+~assertEquals.("selectNthClump 0",~selectNthClump.([0,1,2,3],0,4),[0]);
+~assertEquals.("selectNthClump 1",~selectNthClump.([0,1,2,3],1,4),[1]);
+~assertEquals.("selectNthClump 2",~selectNthClump.([0,1,2,3],2,4),[2]);
+~assertEquals.("selectNthClump 3",~selectNthClump.([0,1,2,3],3,4),[3]);
+~assertEquals.("selectNthClump 4",~selectNthClump.([0,1,2,3,4],0,4),[0,1]); //FIXME
+~assertEquals.("selectNthClump 5",~selectNthClump.([0,1,2,3,4],1,4),[2]);
+~assertEquals.("selectNthClump 6",~selectNthClump.([0,1,2,3,4],2,4),[3]);
+~assertEquals.("selectNthClump 7",~selectNthClump.([0,1,2,3,4],3,4),[4]);
+~assertEquals.("selectNthClump 8",~selectNthClump.([0,1,2,3,4],4,4),[]);
+
+~selectThisTestClump = {|tests,thisClump,nClumps|
+  // first sort tests for predictable test partitioning
+  var sortedTests = tests.as(Array).sort({
+    |a,b|
+    if((a[\suite]==b[\suite]) && a[\test]==(b[\test])) {
+      Error("Duplicate tests! % %".format(a, b)).throw
+    };
+    (a[\suite]<b[\suite]) && (a[\test]<b[\test])
+  });
+
+  ~selectNthClump.(sortedTests, thisClump, nClumps);
 };
 
 ~testrun = {|protoFile, resultFile|
@@ -218,7 +258,7 @@ if(nClumps > 1) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
-	tests = ~selectThisTestClump.(tests);
+	tests = ~selectThisTestClump.(tests,thisClump,nClumps);
 
 	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
