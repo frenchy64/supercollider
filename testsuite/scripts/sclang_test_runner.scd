@@ -91,91 +91,92 @@ if(nClumps > 1) {
 };
 
 splitIntoClumps = {|sortedTests,nClumps|
-  var nTests, minTestsPerClump, extraTestsToDistribute, groupSizes,
-    clumps, actualNClumps, nClumpsBeforePadding;
+	var nTests, minTestsPerClump, extraTestsToDistribute, groupSizes,
+		clumps, actualNClumps, nClumpsBeforePadding;
 
-  if((nClumps.isInteger.not) || (nClumps<1)) {
-    Error("invalid nClumps %".format(nClumps)).throw;
-  };
-
-  nTests = sortedTests.size();
-  minTestsPerClump = (nTests/nClumps).asInteger;
-
-  // now we partition the tests. each partition will have
-  // minTestsPerClump or minTestsPerClump+1 tests in it, with
-  // larger partitions occuring first.
-  extraTestsToDistribute = nTests-(minTestsPerClump*nClumps);
-  if (extraTestsToDistribute>nClumps) {
-    Error("Too many tests left over to distribute evenly").throw;
-  };
-  groupSizes = Array.fill(nClumps, minTestsPerClump);
-  extraTestsToDistribute.do({|i|
-    groupSizes[i] = groupSizes[i]+1;
-  });
-  clumps = sortedTests.clumps(groupSizes);
-  //pad empty clumps
-  clumps = Array.fill(nClumps, {|i| clumps.at(i) ?? []});
-
-  // double check that we won't miss any tests, assuming other jobs
-  // will pick the the other clumps.
-  if (clumps.size() != nClumps) {
-	  Error("Partitioned tests into incorrect number of clumps! Expected %, actual %.".format(nClumps, clumps.size())).throw
+	if((nClumps.isInteger.not) || (nClumps<1)) {
+		Error("invalid nClumps %".format(nClumps)).throw;
 	};
-  if (sortedTests.as(Set) != clumps.flatten.as(Set)) {
-	  Error("Partitioning tests is a lossy operation!").throw
-  };
 
-  clumps
+	nTests = sortedTests.size();
+	minTestsPerClump = (nTests/nClumps).asInteger;
+
+	// now we partition the tests. each partition will have
+	// minTestsPerClump or minTestsPerClump+1 tests in it, with
+	// larger partitions occuring first.
+	extraTestsToDistribute = nTests-(minTestsPerClump*nClumps);
+	if (extraTestsToDistribute>nClumps) {
+		Error("Too many tests left over to distribute evenly").throw;
+	};
+	groupSizes = Array.fill(nClumps, minTestsPerClump);
+	extraTestsToDistribute.do({|i|
+		groupSizes[i] = groupSizes[i]+1;
+	});
+	clumps = sortedTests.clumps(groupSizes);
+	//pad empty clumps
+	clumps = Array.fill(nClumps, {|i| clumps.at(i) ?? []});
+
+	// double check that we won't miss any tests, assuming other jobs
+	// will pick the the other clumps.
+	if (clumps.size() != nClumps) {
+		Error("Partitioned tests into incorrect number of clumps! Expected %, actual %.".format(nClumps, clumps.size())).throw
+	};
+	if (sortedTests.as(Set) != clumps.flatten.as(Set)) {
+		Error("Partitioning tests is a lossy operation!").throw
+	};
+
+	clumps
 };
 
 selectNthClump = {|sortedTests,thisClump,nClumps|
-  if(thisClump.isInteger.not || nClumps.isInteger.not || (0>thisClump) || (thisClump>=nClumps)) {
-    Error("Invalid clumps! % %".format(thisClump, nClumps)).throw
-  };
+	if(thisClump.isInteger.not || nClumps.isInteger.not || (0>thisClump) || (thisClump>=nClumps)) {
+		Error("Invalid clumps! % %".format(thisClump, nClumps)).throw
+	};
 	splitIntoClumps.(sortedTests,nClumps).at(thisClump)
 };
 
 sortTests = {|tests|
-  tests.as(Array).sort({
-    |a,b|
-    if((a[\suite]==b[\suite])) {
-      if(a[\test]==(b[\test])) {
-        Error("Duplicate tests! % %".format(a, b)).throw
-      };
-      (a[\test]<b[\test])
-    } {
-      (a[\suite]<b[\suite])
-    }
-  });
+	tests.as(Array).sort({
+		|a,b|
+		if((a[\suite]==b[\suite])) {
+			if(a[\test]==(b[\test])) {
+				Error("Duplicate tests! % %".format(a, b)).throw
+			};
+			(a[\test]<b[\test])
+		} {
+			(a[\suite]<b[\suite])
+		}
+});
 };
 
 selectThisTestClump = {|tests,thisClump,nClumps|
-  selectNthClump.(sortTests.(tests), thisClump, nClumps);
+	selectNthClump.(sortTests.(tests), thisClump, nClumps);
 };
 
 ({
 var assertEquals = {|id,actual,expected|
-  if((actual == expected).not){
-    Error("fail %: % != %".format(id,actual,expected)).throw
-  }
+	if((actual == expected).not){
+		Error("fail %: % != %".format(id,actual,expected)).throw
+	}
 },
 assertScrambled = {|id,c,f,expected|
-  var times = c.size*2.max(10);
-  if(times<10){ Error("bad times %".format(times)).throw };
-  times.do({|i|
-    var input = c.scramble;
-    assertEquals.("assertScrambled % (input: %, iteration: % of %)".format(id,input,i,times),f.value(input),expected);
-  });
+	var times = c.size*2.max(10);
+	if(times<10){ Error("bad times %".format(times)).throw };
+	times.do({|i|
+		var input = c.scramble;
+		assertEquals.("assertScrambled % (input: %, iteration: % of %)".format(id,input,i,times),f.value(input),expected);
+});
 },
 assertThrows = {|id,f|
-  var result;
-  try {
-    f.value;
-    result="no throw"
-  } { |error|
-    result="throw"
-  };
-  assertEquals.("assertThrows %".format(id),result,"throw");
+	var result;
+	try {
+		f.value;
+		result="no throw"
+	} { |error|
+		result="throw"
+	}
+};
+assertEquals.("assertThrows %".format(id),result,"throw");
 },
 s0t0 = Dictionary[\suite->"suite0", \test->"test0"],
 s0t1 = Dictionary[\suite->"suite0", \test->"test1"],
@@ -419,7 +420,7 @@ assertScrambled.("selectThisTestClump 6",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTes
 	// 0.exit;
 	if(~exitWhenDone) {
 		0.exit;
-    this.halt;
+		this.halt;
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
 } { |error| //catch
