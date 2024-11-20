@@ -105,7 +105,7 @@ jobs:
       - name: Download test results
         uses: actions/download-artifact@v4
         with:
-          pattern: 'testsuite/scripts/run/gha_result_*.scxtar'
+          pattern: test-list-result-${{ inputs.os }}-${{ inputs.artifact-file }}-*
           merge-multiple: true
 
       - name: Download artifacts
