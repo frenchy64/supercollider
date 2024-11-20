@@ -17,7 +17,7 @@ jobs:
         # the array contents are not used (suggest just counting up from 0).
         # array must be non-empty, otherwise tests won't run!
         id: [0,1,2,3,4]
-    name: "Test macOS (${{ strategy.job-index }}th/{{ strategy.job-total }})"
+    name: "Test macOS (${{ strategy.job-index }}th test clump)"
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       ARTIFACT_FILE: ${{ inputs.artifact-file }}
