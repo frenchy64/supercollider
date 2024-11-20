@@ -96,7 +96,7 @@ if(nClumps > 1) {
 };
 
 ~selectThisTestClump = {|tests|
-  var sortedTests, nTests, minTestsPerClump, extraTestsToDistribute, groupSizes
+  var sortedTests, nTests, minTestsPerClump, extraTestsToDistribute, groupSizes,
     clumps, actualNClumps;
 
   // first sort tests for predictable test partitioning
@@ -130,7 +130,7 @@ if(nClumps > 1) {
   if (actualNClumps > nClumps) {
 	  Error("Partitioned tests into too many clumps! Expected %, actual %.".format(nClumps, actualNClumps)).throw
 	};
-  if (tests != clumps.flatten) {
+  if (tests.as(Set) != clumps.flatten.as(Set)) {
 	  Error("Partitioning tests is a lossy operation!").throw
   };
 
