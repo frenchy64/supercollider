@@ -142,6 +142,7 @@ selectNthClump = {|sortedTests,thisClump,nClumps|
 };
 
 sortTests = {|tests|
+	assertNoDuplicates.(tests);
 	tests.as(Array).sort({
 		|a,b|
 		if((a[\suite]==b[\suite])) {
