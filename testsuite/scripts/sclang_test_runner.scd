@@ -46,7 +46,7 @@ if(nClumps > 1) {
 	"dividing test suite into % clumps and testing clump index %".format(nClumps, thisClump).postln;
 };
 
-~verboseSetup = false; // true or false
+~verboseSetup = true; // true or false
 
 ~useColors = \Document.asClass.isNil; // use colors if we're running outside of the IDE
 
@@ -150,6 +150,9 @@ sortTests = {|tests|
 };
 
 selectThisTestClump = {|tests,thisClump,nClumps|
+	if(tests.as(Set).size != tests.size) {
+		Error("duplicate tests before partitioning!").throw;
+	};
 	selectNthClump.(sortTests.(tests), thisClump, nClumps);
 };
 
@@ -320,7 +323,8 @@ assertScrambled.("selectThisTestClump 6",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTes
 	// test_record["tests"] = tests;
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
-
+	//temp
+	1000.do({|i|selectThisTestClump.(tests.scramble,thisClump,nClumps)});
 	tests = selectThisTestClump.(tests,thisClump,nClumps);
 
 	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
