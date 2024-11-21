@@ -78,7 +78,7 @@ jobs:
           $SCLANG $SCRIPT_PRINT_RESULTS $TEST_LIST_RESULT
 
       - name: Upload test results
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: test-list-result
