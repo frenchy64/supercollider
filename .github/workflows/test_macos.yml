@@ -79,7 +79,7 @@ jobs:
           timeout 1m $SCLANG $SCRIPT_PRINT_RESULTS $TEST_LIST_RESULT
 
       - name: Upload test results
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: test-list-result-${{ inputs.os }}-${{ inputs.artifact-file }}-${{ strategy.job-index }}
@@ -87,7 +87,7 @@ jobs:
 
   results:
     runs-on: ${{ inputs.os }}
-    if: !cancelled() && needs.test.outputs.job-total > 1
+    if: ${{ !cancelled() && needs.test.outputs.job-total > 1 }}
     needs: test
     timeout-minutes: 15
     name: "Print combined macOS results"
