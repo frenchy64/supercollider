@@ -1,101 +1,31 @@
-name: Build Linux
+name: Build and Test Linux
 on:
   workflow_call:
     inputs:
-      sc-version:
+      params:
+        required: true
+        type: string
+      matrix:
         required: true
         type: string
 
 jobs:
   build-linux:
-    runs-on: ubuntu-${{ matrix.os-version }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-
-          - job-name: ""
-            os-version: "22.04"
-            c-compiler: "gcc-9"
-            cxx-compiler: "g++-9"
-            use-syslibs: false
-            shared-libscsynth: false
-
-          - job-name: ""
-            os-version: "22.04"
-            c-compiler: "gcc-11"
-            cxx-compiler: "g++-11"
-            use-syslibs: false
-            shared-libscsynth: false
-
-          - job-name: ""
-            os-version: "22.04"
-            c-compiler: "gcc-12"
-            cxx-compiler: "g++-12"
-            use-syslibs: false
-            shared-libscsynth: false
-            artifact-suffix: "ubuntu-22.04-gcc12" # will trigger artifact upload; after changing this update the test-linux artifact-file in actions.yml
-
-          - job-name: "use system libraries"
-            os-version: "24.04"
-            c-compiler: "gcc-13"
-            cxx-compiler: "g++-13"
-            use-syslibs: true
-            shared-libscsynth: false
-
-          - job-name: "shared libscsynth"
-            os-version: "24.04"
-            c-compiler: "gcc-14"
-            cxx-compiler: "g++-14"
-            use-syslibs: false
-            shared-libscsynth: true
-            
-          - job-name: ""
-            os-version: "22.04"
-            c-compiler: "clang-11"
-            cxx-compiler: "clang++-11"
-            use-syslibs: false
-            shared-libscsynth: false
-
-          - job-name: ""
-            os-version: "24.04"
-            c-compiler: "clang-15"
-            cxx-compiler: "clang++-15"
-            use-syslibs: false
-            shared-libscsynth: false
-
-          - job-name: ""
-            os-version: "24.04"
-            c-compiler: "clang-16"
-            cxx-compiler: "clang++-16"
-            use-syslibs: false
-            shared-libscsynth: false
-
-          - job-name: ""
-            os-version: "24.04"
-            c-compiler: "clang-17"
-            cxx-compiler: "clang++-17"
-            use-syslibs: false
-            shared-libscsynth: false
-
-          - job-name: ""
-            os-version: "24.04"
-            c-compiler: "clang-18"
-            cxx-compiler: "clang++-18"
-            use-syslibs: false
-            shared-libscsynth: false
-
-    name: Ubuntu ${{ matrix.os-version }} ${{ matrix.c-compiler }} ${{ matrix.job-name }}
+    runs-on: "ubuntu-${{ fromJSON(inputs.matrix).os-version }}"
+    timeout-minutes: 15
+    name: Ubuntu ${{ fromJSON(inputs.matrix).os-version }} ${{ fromJSON(inputs.matrix).c-compiler }} ${{ fromJSON(inputs.matrix).job-name }}
     env:
       BUILD_PATH: ${{ github.workspace }}/build
       INSTALL_PATH: ${{ github.workspace }}/build/Install
-      USE_SYSLIBS: ${{ matrix.use-syslibs }}
-      SHARED_LIBSCSYNTH: ${{ matrix.shared-libscsynth }}
-      CC: ${{ matrix.c-compiler }}
-      CXX: ${{ matrix.cxx-compiler }}
-      ARTIFACT_FILE: "SuperCollider-${{ inputs.sc-version }}-${{ matrix.artifact-suffix }}"
+      USE_SYSLIBS: ${{ fromJSON(inputs.matrix).use-syslibs }}
+      SHARED_LIBSCSYNTH: ${{ fromJSON(inputs.matrix).shared-libscsynth }}
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CC: ${{ fromJSON(inputs.matrix).c-compiler }}
+      CXX: ${{ fromJSON(inputs.matrix).cxx-compiler }}
+      ARTIFACT_FILE: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"
 
     steps:
+      - run: git config --global submodule.fetchJobs ${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -110,27 +40,53 @@ jobs:
           path: |
             ~/.ccache
             ~/.cache/ccache
-          key: ${{ runner.os }}-${{ matrix.os-version }}-${{ matrix.c-compiler }}-${{ matrix.use-syslibs }}-${{ matrix.shared-libscsynth }}-${{ steps.current-date.outputs.stamp }}
-          restore-keys: ${{ runner.os }}-${{ matrix.os-version }}-${{ matrix.c-compiler }}-${{ matrix.use-syslibs }}-${{ matrix.shared-libscsynth }}-
+          key: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-${{ steps.current-date.outputs.stamp }}
+          restore-keys: ${{ runner.os }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}-${{ env.USE_SYSLIBS }}-${{ env.SHARED_LIBSCSYNTH }}-
 
-      - name: install dependencies
+      - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
+        with:
+          # some extra packages that don't cache well are moved to 'Calculate packages' step
+          tools: 'build-essential cmake pkg-config libasound2-dev libavahi-client-dev libreadline6-dev libfftw3-dev libicu-dev libxt-dev emacs ccache libxkbcommon-dev libxcb-xkb-dev'
+          cache: ${{ fromJSON(inputs.matrix).os-version == '22.04' && 'yes' || 'no' }}
+          key: ${{ github.event_name != 'pull_request' && steps.current-date.outputs.stamp || '' }}
+          method: timestamp
+
+      # install qt from apt
+      - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
+        with:
+          tools: 'qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools qt6-declarative-dev libqt6printsupport6 libqt6svgwidgets6 libqt6websockets6-dev qt6-webengine-dev qt6-webengine-dev-tools libqt6webchannel6-dev libqt6svg6-dev qt6-l10n-tools libglx-dev libvulkan-dev'
+          key: ${{ github.event_name != 'pull_request' && steps.current-date.outputs.stamp || '' }}
+          method: timestamp
+          path: >-
+            /etc
+            /usr/include
+            /usr/bin
+            /usr/sbin
+            /usr/lib
+            /usr/share
+            /var/lib
+
+      - name: Calculate packages
+        id: packages
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes build-essential cmake pkg-config libjack-jackd2-dev libsndfile1-dev libasound2-dev libavahi-client-dev libreadline6-dev libfftw3-dev libicu-dev libxt-dev libudev-dev emacs ccache
+          # problems recovering from cache
+          PACKAGES='libsndfile1-dev libudev-dev libjack-jackd2-dev'
           # install appropriate clang/gcc compilers
           if [[ "$CC" =~ clang-[1-9] ]]; then
-            sudo apt-get install -y $CC # package names are clang-X
-            sudo apt-get install -y libc++-${CC##clang-}-dev libc++abi-${CC##clang-}-dev # install additional libraries; package names are libc++-X-dev and libc++abi-X-dev
+            PACKAGES="$PACKAGES $CC" # package names are clang-X
+            PACKAGES="$PACKAGES libc++-${CC##clang-}-dev libc++abi-${CC##clang-}-dev" # install additional libraries; package names are libc++-X-dev and libc++abi-X-dev
           elif [[ "$CC" =~ gcc-[1-9] ]]; then
-            sudo apt-get install -y $CXX # package names are g++-X
+            PACKAGES="$PACKAGES $CXX" # package names are g++-X
           fi
+          # install system libraries
+          if [[ "$USE_SYSLIBS" == true ]]; then
+            PACKAGES="$PACKAGES libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev"
+          fi
+          # additional qt packages that have problems being cached
+          PACKAGES="$PACKAGES qt6-base-dev libqt6opengl6-dev linguist-qt6 libqt6gui6 libgl1-mesa-dev libqt6webenginecore6"
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
-      - name: install system libraries
-        if: env.USE_SYSLIBS == 'true'
-        run: sudo apt-get install --yes libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-regex-dev libboost-test-dev libboost-program-options-dev libyaml-cpp-dev
-
-      - name: install qt from apt
-        run: sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools qt6-declarative-dev libqt6gui6 libqt6printsupport6 libqt6svgwidgets6 libqt6websockets6-dev libqt6webenginecore6 qt6-webengine-dev qt6-webengine-dev-tools libqt6webchannel6-dev libqt6opengl6-dev libqt6svg6-dev linguist-qt6 qt6-l10n-tools  libglx-dev libgl1-mesa-dev libvulkan-dev libxkbcommon-dev libxcb-xkb-dev
+      - run: sudo apt-get install ${{ steps.packages.outputs.packages }}
 
       - name: configure
         run: |
@@ -142,20 +98,34 @@ jobs:
 
           if $SHARED_LIBSCSYNTH; then EXTRA_CMAKE_FLAGS="-DLIBSCSYNTH=ON $EXTRA_CMAKE_FLAGS"; fi
 
-          cmake $EXTRA_CMAKE_FLAGS -DSC_EL=ON -DSC_VIM=ON -DSC_QT=ON -DSC_IDE=ON  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PATH -DCMAKE_BUILD_TYPE=Release .. # --debug-output
+          CMAKE_BUILD_PARALLEL_LEVEL=1 cmake $EXTRA_CMAKE_FLAGS -DSC_EL=ON -DSC_VIM=ON -DSC_QT=ON -DSC_IDE=ON  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PATH -DCMAKE_BUILD_TYPE=Release .. # --debug-output
 
       - name: build
         run: |
           cd $BUILD_PATH
-          make install -j2
+          make install -j${{ env.CMAKE_BUILD_PARALLEL_LEVEL }}
 
       - name: create archive
-        if: matrix.artifact-suffix
+        if: fromJSON(inputs.matrix).run-tests
         run: cd $INSTALL_PATH && zip --symlinks -r $ARTIFACT_FILE.zip .
 
       - name: upload artifacts
         uses: actions/upload-artifact@v4
-        if: matrix.artifact-suffix
+        if: fromJSON(inputs.matrix).run-tests
         with:
           name: ${{ env.ARTIFACT_FILE }}
           path: ${{ env.INSTALL_PATH }}/${{ env.ARTIFACT_FILE }}.zip
+
+  test-linux:
+    if: fromJSON(inputs.matrix).run-tests
+    needs: build-linux
+    uses: ./.github/workflows/test_linux.yml
+    with:
+      artifact-file: "SuperCollider-${{ fromJSON(inputs.params).sc-version }}-${{ fromJSON(inputs.matrix).os-version }}-${{ fromJSON(inputs.matrix).c-compiler }}"
+      os-version: ${{ fromJSON(inputs.matrix).os-version }}
+      this-split: ${{ matrix.this-split }}
+      nsplits: ${{ fromJSON(inputs.matrix).test-splits }}
+    strategy:
+      matrix:
+        this-split: ${{ fromJSON(inputs.matrix).splits-matrix }}
+    secrets: inherit

@@ -5,10 +5,20 @@ on:
       artifact-file:
         required: true
         type: string
+      os-version:
+        required: true
+        type: string
+      this-split:
+        required: true
+        type: number
+      nsplits:
+        required: true
+        type: number
 
 jobs:
   test-linux:
-    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    runs-on: ubuntu-${{ inputs.os-version }}
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       ARTIFACT_FILE: ${{ inputs.artifact-file }}
@@ -24,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: false # don't need submodules for testing
+          sparse-checkout: testsuite
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -38,12 +49,13 @@ jobs:
           ls
           unzip $ARTIFACT_FILE.zip
 
+      - uses: tecolicom/actions-use-apt-tools@e670504026a28f7072e37db1de6b256901c01b0f
+        with:
+          tools: 'libsndfile1 libavahi-client-dev libfftw3-dev libicu-dev libudev-dev qt6-base-dev libqt6svg6-dev qt6-webengine-dev libqt6webenginecore6-bin jackd1 socat'
+          method: timestamp
+
       - name: Setup environment
         run: |
-          # install dependencies
-          sudo apt-get update
-          sudo apt-get install --yes libsndfile1 libavahi-client-dev libfftw3-dev libicu-dev libudev-dev qt6-base-dev libqt6svg6-dev qt6-webengine-dev libqt6webenginecore6-bin jackd1 socat
-
           # add bin to PATH so that scsynth can be found
           echo "$INSTALL_PATH/bin" >> $GITHUB_PATH
 
@@ -59,10 +71,11 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
+          set -x
           # add path
           $SCLANG $SCRIPT_ADD_PATH $TESTS_PATH
           # run tests
-          timeout 1200 $SCLANG $SCRIPT_RUN_TESTS $TEST_LIST_PROTO $TEST_LIST_RESULT
+          timeout 1200 $SCLANG $SCRIPT_RUN_TESTS $TEST_LIST_PROTO $TEST_LIST_RESULT ${{ inputs.this-split }} ${{ inputs.nsplits }}
 
       - name: Post test results
         shell: bash
