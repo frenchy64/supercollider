@@ -9,7 +9,7 @@
 // - default: 1 (must provide if partition provided)
 (
 var thisClump, nClumps, selectNthClump, sortTests, selectThisTestClump, splitIntoClumps,
-	nargv = thisProcess.argv.size;
+	assertNoDuplicates, nargv = thisProcess.argv.size;
 ~exitWhenDone = nargv > 0;
 try {
 if(nargv > 0) {
@@ -59,6 +59,12 @@ if(nClumps > 1) {
 
 ~writeResult = {|results, path|
 	results.writeArchive(path);
+};
+
+assertNoDuplicates = {|tests|
+	if(tests.as(Set).size != tests.size) {
+		Error("duplicate tests!").throw;
+	};
 };
 
 // extract the test record dictionary from the input file
@@ -150,9 +156,7 @@ sortTests = {|tests|
 };
 
 selectThisTestClump = {|tests,thisClump,nClumps|
-	if(tests.as(Set).size != tests.size) {
-		Error("duplicate tests before partitioning!").throw;
-	};
+	assertNoDuplicates.(tests);
 	selectNthClump.(sortTests.(tests), thisClump, nClumps);
 };
 
@@ -253,11 +257,14 @@ assertScrambled.("selectThisTestClump 6",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTes
 	UnitTest.findTestClasses();
 
 	tests = ~expandSuiteGlob.(tests);
+	assertNoDuplicates.(tests);
 
 	tests = List.newFrom(tests.collect(Dictionary.newFrom(_)));
+	assertNoDuplicates.(tests);
 
 	// Expand *'s
 	toExpand = tests.select({|t| (t[\test] == "*") && (t[\completed] != true) });
+	assertNoDuplicates.(tests);
 	~verboseSetup.if({"Expanding %\n".postf(toExpand)});
 	toExpand.do {|wildcardTest|
 		var allTests, newTest, class;
@@ -284,6 +291,7 @@ assertScrambled.("selectThisTestClump 6",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTes
 				));
 
 				tests.add(newTest);
+				assertNoDuplicates.(tests);
 				~verboseSetup.if({"tests.size: %".format(tests.size).postln});
 			};
 			tests.remove(wildcardTest);
@@ -320,12 +328,14 @@ assertScrambled.("selectThisTestClump 6",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTes
 			true;
 		}
 	});
+	assertNoDuplicates.(tests);
 	// test_record["tests"] = tests;
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 	//temp
 	1000.do({|i|selectThisTestClump.(tests.scramble,thisClump,nClumps)});
 	tests = selectThisTestClump.(tests,thisClump,nClumps);
+	assertNoDuplicates.(tests);
 
 	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
