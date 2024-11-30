@@ -5,10 +5,13 @@ on:
       artifact-file:
         required: true
         type: string
+      os-version:
+        required: true
+        type: string
 
 jobs:
   test-macos:
-    runs-on: macos-12
+    runs-on: macos-${{ '12' || inputs.os-version }}
     env:
       INSTALL_PATH: ${{ github.workspace }}/build/Install
       ARTIFACT_FILE: ${{ inputs.artifact-file }}
