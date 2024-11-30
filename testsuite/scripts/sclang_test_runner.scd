@@ -1,15 +1,43 @@
-// this script is meant to be run with two arguments: path to test prototype indicating tests to be run, and path to test result
+// this script is meant to be run with four arguments:
+// 1. path to test prototype indicating tests to be run
+// - default: "./test_run_proto_gha.scd"
+// 2. path to test result
+// - default: "./test_result.scxtar"
+// 3. which partition of the tests should be run (zero based)
+// - default: 0
+// 4. the number of test partitions
+// - default: 1 (must provide if partition provided)
 (
+var thisClump, nClumps;
 ~exitWhenDone = false;
+~exitCode = 0;
 if(thisProcess.argv.size > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
+	if(thisProcess.argv.size > 2) {
+		thisClump = thisProcess.argv[2].asInteger();
+		nClumps = thisProcess.argv[3].asInteger();
+	};
 	~exitWhenDone = true;
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";
 	// ~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_all.scd"; // for testing
 	~testResult = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "run" +/+ "test_result.scxtar";
+};
+
+thisClump ?? {
+	thisClump = 0;
+	nClumps = 1;
+};
+
+if(0>thisClump || thisClump>=nClumps) {
+  var msg="Invalid clumps! % %".format(thisClump, nClumps);
+	if(~exitWhenDone) {
+    msg.postln; 2.exit; this.halt;
+	} {
+    Error(msg).throw;
+  };
 };
 
 if(File.exists(~testProto).not) {
@@ -18,6 +46,10 @@ if(File.exists(~testProto).not) {
 
 "~testProto path: %".format(~testProto).postln;
 "~testResult path: %".format(~testResult).postln;
+
+if(nClumps > 1) {
+	"dividing test suite into % clumps and testing clump index %".format(nClumps, thisClump).postln;
+};
 
 ~verboseSetup = false; // true or false
 
@@ -63,12 +95,17 @@ if(File.exists(~testProto).not) {
 	testsDict;
 };
 
+~selectThisTestClump = {|tests,thisClump,nClumps|
+  tests.clump(tests.size()/nClumps).at(thisClump) ?? #[];
+};
+
+
 ~testrun = {|protoFile, resultFile|
 	var tests = ~getTestRecord.(protoFile);
 	var skipped, toExpand, toExclude;
 	var currentSuite = "";
 
-	// try {
+	// try
 
 	UnitTest.findTestClasses();
 
@@ -89,6 +126,7 @@ if(File.exists(~testProto).not) {
 		};
 
 		if (class.isNil) {
+			~exitCode = 1;
 			wildcardTest[\error] = "Class % not found".format(class);
 			wildcardTest[\completed] = true;
 			// ~writeResult.(test_record, file);
@@ -144,6 +182,10 @@ if(File.exists(~testProto).not) {
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
 
+	tests = ~selectThisTestClump.(tests, thisClump, nClumps);
+
+	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
+
 	"\n\n\t*** Running the tests ***\n\n".post;
 
 	// Okay, time to run the tests
@@ -170,6 +212,7 @@ if(File.exists(~testProto).not) {
 				class = test[\suite].asSymbol.asClass;
 				testname = test[\test].asSymbol;
 				if (class.isNil) {
+					~exitCode = 1;
 					test[\error] = "Class % not found".format(class);
 					test[\completed] = true;
 					~writeResult.(tests, resultFile);
@@ -210,6 +253,7 @@ if(File.exists(~testProto).not) {
 							))
 						};
 						newFailures.do {|fail|
+							~exitCode = 1;
 							test[\results].add((
 								\pass: false,
 								\test: ("" ++ fail.message.split($\n)[0])[0..1000],
@@ -219,6 +263,7 @@ if(File.exists(~testProto).not) {
 
 						~writeResult.(tests, resultFile);
 					} {
+						~exitCode = 1;
 						test[\error] = "Test not found.";
 						test[\completed] = true;
 						~writeResult.(tests, resultFile);
@@ -235,9 +280,8 @@ if(File.exists(~testProto).not) {
 {
 	~testrun.(~testProto, ~testResult);
 	"\n\n******** DONE ********\n\n".postln;
-	// 0.exit;
 	if(~exitWhenDone) {
-		0.exit;
+		~exitCode.exit;
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
 )
