@@ -94,6 +94,7 @@ jobs:
       CC: ${{ matrix.c-compiler }}
       CXX: ${{ matrix.cxx-compiler }}
       ARTIFACT_FILE: "SuperCollider-${{ inputs.sc-version }}-${{ matrix.artifact-suffix }}"
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
 
     steps:
       - uses: actions/checkout@v4
@@ -147,7 +148,7 @@ jobs:
       - name: build
         run: |
           cd $BUILD_PATH
-          make install -j2
+          make install -j4
 
       - name: create archive
         if: matrix.artifact-suffix
