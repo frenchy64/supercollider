@@ -24,7 +24,7 @@ jobs:
             vcpkg-packages: ""
             vcpkg-triplet: ""
             extra-cmake-flags: "" # -D SC_VERIFY_APP=ON # verify app doesn't seem to work with official qt6
-            artifact-suffix: "macOS-x64"
+            artifact-suffix: "macOS-arm64"
 
     name: macOS ${{ matrix.job-name }}
     env:
