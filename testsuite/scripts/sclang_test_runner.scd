@@ -1,15 +1,38 @@
-// this script is meant to be run with two arguments: path to test prototype indicating tests to be run, and path to test result
+// this script is meant to be run with four arguments:
+// 1. path to test prototype indicating tests to be run
+// - default: "./test_run_proto_gha.scd"
+// 2. path to test result
+// - default: "./test_result.scxtar"
+// 3. which partition of the tests should be run (zero based)
+// - default: 0
+// 4. the number of test partitions
+// - default: 1 (must provide if partition provided)
 (
-~exitWhenDone = false;
-if(thisProcess.argv.size > 0) {
+var thisClump, nClumps, selectNthClump, sortTests, selectThisTestClump, splitIntoClumps,
+	assertNoDuplicates, nargv = thisProcess.argv.size;
+~exitWhenDone = nargv > 0;
+try {
+if(nargv > 0) {
 	"passed args: %".format(thisProcess.argv).postln;
 	~testProto = thisProcess.argv[0];
 	~testResult = thisProcess.argv[1];
-	~exitWhenDone = true;
+	if(nargv > 2) {
+		thisClump = thisProcess.argv[2].asInteger();
+		nClumps = thisProcess.argv[3].asInteger();
+	};
 } {
 	~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_gha.scd";
 	// ~testProto = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "test_run_proto_all.scd"; // for testing
 	~testResult = PathName(thisProcess.nowExecutingPath).pathOnly +/+ "run" +/+ "test_result.scxtar";
+};
+
+thisClump ?? {
+  if(nClumps.notNil) {
+    // this should be unreachable
+    Error("thisClump and nClumps and must set together").throw
+  };
+	thisClump = 0;
+	nClumps = 1;
 };
 
 if(File.exists(~testProto).not) {
@@ -19,7 +42,11 @@ if(File.exists(~testProto).not) {
 "~testProto path: %".format(~testProto).postln;
 "~testResult path: %".format(~testResult).postln;
 
-~verboseSetup = false; // true or false
+if(nClumps > 1) {
+	"dividing test suite into % clumps and testing clump index %".format(nClumps, thisClump).postln;
+};
+
+~verboseSetup = true; // true or false
 
 ~useColors = \Document.asClass.isNil; // use colors if we're running outside of the IDE
 
@@ -32,6 +59,12 @@ if(File.exists(~testProto).not) {
 
 ~writeResult = {|results, path|
 	results.writeArchive(path);
+};
+
+assertNoDuplicates = {|tests|
+	if(tests.as(Set).size != tests.size) {
+		Error("duplicate tests!").throw;
+	};
 };
 
 // extract the test record dictionary from the input file
@@ -63,21 +96,176 @@ if(File.exists(~testProto).not) {
 	testsDict;
 };
 
+splitIntoClumps = {|sortedTests,nClumps|
+	var nTests, minTestsPerClump, extraTestsToDistribute, groupSizes,
+		clumps, actualNClumps, nClumpsBeforePadding;
+
+	if((nClumps.isInteger.not) || (nClumps<1)) {
+		Error("invalid nClumps %".format(nClumps)).throw;
+	};
+
+	nTests = sortedTests.size();
+	minTestsPerClump = (nTests/nClumps).asInteger;
+
+	// now we partition the tests. each partition will have
+	// minTestsPerClump or minTestsPerClump+1 tests in it, with
+	// larger partitions occuring first.
+	extraTestsToDistribute = nTests-(minTestsPerClump*nClumps);
+	if (extraTestsToDistribute>nClumps) {
+		Error("Too many tests left over to distribute evenly").throw;
+	};
+	groupSizes = Array.fill(nClumps, minTestsPerClump);
+	extraTestsToDistribute.do({|i|
+		groupSizes[i] = groupSizes[i]+1;
+	});
+	clumps = sortedTests.clumps(groupSizes);
+	//pad empty clumps
+	clumps = Array.fill(nClumps, {|i| clumps.at(i) ?? []});
+
+	// double check that we won't miss any tests, assuming other jobs
+	// will pick the the other clumps.
+	if (clumps.size() != nClumps) {
+		Error("Partitioned tests into incorrect number of clumps! Expected %, actual %.".format(nClumps, clumps.size())).throw
+	};
+	if (sortedTests.as(Set) != clumps.flatten.as(Set)) {
+		Error("Partitioning tests is a lossy operation!").throw
+	};
+
+	clumps
+};
+
+selectNthClump = {|sortedTests,thisClump,nClumps|
+	if(thisClump.isInteger.not || nClumps.isInteger.not || (0>thisClump) || (thisClump>=nClumps)) {
+		Error("Invalid clumps! % %".format(thisClump, nClumps)).throw
+	};
+	splitIntoClumps.(sortedTests,nClumps).at(thisClump)
+};
+
+sortTests = {|tests|
+	assertNoDuplicates.(tests);
+	tests.as(Array).sort({
+		|a,b|
+		if((a[\suite]==b[\suite])) {
+			if(a[\test]==(b[\test])) {
+				Error("Duplicate tests! % %".format(a, b)).throw
+			};
+			(a[\test]<b[\test])
+		} {
+			(a[\suite]<b[\suite])
+		}
+	});
+};
+
+selectThisTestClump = {|tests,thisClump,nClumps|
+	assertNoDuplicates.(tests);
+	selectNthClump.(sortTests.(tests), thisClump, nClumps);
+};
+
+({
+var assertEquals = {|id,actual,expected|
+	if((actual == expected).not){
+		Error("fail %: % != %".format(id,actual,expected)).throw
+	}
+},
+assertScrambled = {|id,c,f,expected|
+	var times = c.size*2.max(10);
+	if(times<10){ Error("bad times %".format(times)).throw };
+	times.do({|i|
+		var input = c.scramble;
+		assertEquals.("assertScrambled % (input: %, iteration: % of %)".format(id,input,i,times),f.value(input),expected);
+});
+},
+assertThrows = {|id,f|
+	var result;
+	try {
+		f.value;
+		result="no throw"
+	} { |error|
+		result="throw"
+	};
+	assertEquals.("assertThrows %".format(id),result,"throw");
+},
+s0t0 = Dictionary[\suite->"suite0", \test->"test0"],
+s0t1 = Dictionary[\suite->"suite0", \test->"test1"],
+s1t0 = Dictionary[\suite->"suite1", \test->"test0"],
+s1t1 = Dictionary[\suite->"suite1", \test->"test1"];
+
+//sanity checks
+if("fails"!=try{assertEquals.("should fail", false, true);"succeeds"}{|e|"fails"}){Error("assertEquals 0").throw;};
+assertEquals.("assertEquals 0",try{assertThrows.("should fail",{"missing throw"});"succeeds"}{|e|"fails"},"fails");
+assertThrows.("assertScrambled 0",{assertScrambled("assertScrambled self test",[0,1,2,3],{|c|c.at(0)}, 0)});
+
+assertEquals.("splitIntoClumps 00",splitIntoClumps.([0,1,2,3],4),[[0],[1],[2],[3]]);
+assertEquals.("splitIntoClumps 01",splitIntoClumps.([0,1,2,3],5),[[0],[1],[2],[3],[]]);
+assertEquals.("splitIntoClumps 02",splitIntoClumps.([0,1,2,3],6),[[0],[1],[2],[3],[],[]]);
+assertEquals.("splitIntoClumps 03",splitIntoClumps.([0,1,2,3],3),[[0,1],[2],[3]]);
+assertEquals.("splitIntoClumps 04",splitIntoClumps.([0,1,2,3],2),[[0,1],[2,3]]);
+assertEquals.("splitIntoClumps 05",splitIntoClumps.([0,1,2,3],1),[[0,1,2,3]]);
+assertEquals.("splitIntoClumps 06",splitIntoClumps.([0,1,2,3],1),[[0,1,2,3]]);
+assertEquals.("splitIntoClumps 07",splitIntoClumps.([0,1,2,3,4],4),[[0,1],[2],[3],[4]]);
+assertEquals.("splitIntoClumps 08",splitIntoClumps.([0,1,2,3,4],5),[[0],[1],[2],[3],[4]]);
+assertEquals.("splitIntoClumps 09",splitIntoClumps.([0,1,2,3,4],6),[[0],[1],[2],[3],[4],[]]);
+assertEquals.("splitIntoClumps 10",splitIntoClumps.([0,1,2,3,4],3),[[0,1],[2,3],[4]]);
+assertEquals.("splitIntoClumps 11",splitIntoClumps.([0,1,2,3,4],2),[[0,1,2],[3,4]]);
+assertEquals.("splitIntoClumps 12",splitIntoClumps.([0,1,2,3,4],1),[[0,1,2,3,4]]);
+assertEquals.("splitIntoClumps 13",splitIntoClumps.([0,1,2,3,4,5,6,7,8,9,10],2),[[0,1,2,3,4,5],[6,7,8,9,10]]);
+assertEquals.("splitIntoClumps 14",splitIntoClumps.([],2),[[],[]]);
+assertEquals.("splitIntoClumps 15",splitIntoClumps.([],1),[[]]);
+assertThrows.("splitIntoClumps 16",{splitIntoClumps.([],0)});
+assertThrows.("splitIntoClumps 17",{splitIntoClumps.([],-1)});
+assertThrows.("splitIntoClumps 18",{splitIntoClumps.([],1.5)});
+assertThrows.("splitIntoClumps 19",{splitIntoClumps.([],"3")});
+
+assertEquals.("selectNthClump 0",selectNthClump.([0,1,2,3],0,4),[0]);
+assertEquals.("selectNthClump 1",selectNthClump.([0,1,2,3],1,4),[1]);
+assertEquals.("selectNthClump 2",selectNthClump.([0,1,2,3],2,4),[2]);
+assertEquals.("selectNthClump 3",selectNthClump.([0,1,2,3],3,4),[3]);
+assertEquals.("selectNthClump 4",selectNthClump.([0,1,2,3,4],0,4),[0,1]);
+assertEquals.("selectNthClump 5",selectNthClump.([0,1,2,3,4],1,4),[2]);
+assertEquals.("selectNthClump 6",selectNthClump.([0,1,2,3,4],2,4),[3]);
+assertEquals.("selectNthClump 7",selectNthClump.([0,1,2,3,4],3,4),[4]);
+assertThrows.("selectNthClump 8",{selectNthClump.([0,1,2,3,4],4,4)});
+assertThrows.("selectNthClump 9",{selectNthClump.([0,1,2,3,4],-1,4)});
+assertThrows.("selectNthClump 10",{selectNthClump.([0,1,2,3,4],0,-1)});
+assertThrows.("selectNthClump 11",{selectNthClump.([0,1,2,3,4],4,4)});
+assertThrows.("selectNthClump 12",{selectNthClump.([0,1,2,3,4],5,4)});
+assertThrows.("selectNthClump 13",{selectNthClump.([0,1,2,3,4],1.5,4)});
+assertThrows.("selectNthClump 14",{selectNthClump.([0,1,2,3,4],"1","4")});
+
+assertEquals.("sortTests 0",sortTests.([s0t0,s0t1,s1t0,s1t1]),[s0t0,s0t1,s1t0,s1t1]);
+assertEquals.("sortTests 1",sortTests.([s1t0,s0t1]),[s0t1,s1t0]);
+assertEquals.("sortTests 2",sortTests.([s1t0,s0t1,s0t0,s1t1]),[s0t0,s0t1,s1t0,s1t1]);
+assertThrows.("sortTests 3",{sortTests.([s0t0,s0t0])});
+assertEquals.("sortTests 4",sortTests.([]),[]);
+assertEquals.("sortTests 5",sortTests.([s0t0,s0t1]),[s0t0,s0t1]);
+assertEquals.("sortTests 6",sortTests.([s1t0,s0t0]),[s0t0,s1t0]);
+assertScrambled.("sortTests 7",[s0t0,s0t1,s1t0,s1t1],{|t|sortTests.(t)},[s0t0,s0t1,s1t0,s1t1]);
+
+assertEquals.("selectThisTestClump 0",selectThisTestClump.([],0,4),[]);
+assertEquals.("selectThisTestClump 1",selectThisTestClump.([s0t0],0,4),[s0t0]);
+assertScrambled.("selectThisTestClump 2",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTestClump.(t,0,4)},[s0t0]);
+assertScrambled.("selectThisTestClump 4",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTestClump.(t,1,4)},[s0t1]);
+assertScrambled.("selectThisTestClump 5",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTestClump.(t,2,4)},[s1t0]);
+assertScrambled.("selectThisTestClump 6",[s0t0,s0t1,s1t0,s1t1],{|t|selectThisTestClump.(t,3,4)},[s1t1]);
+
+}.value);
+
 ~testrun = {|protoFile, resultFile|
 	var tests = ~getTestRecord.(protoFile);
 	var skipped, toExpand, toExclude;
 	var currentSuite = "";
 
-	// try {
-
 	UnitTest.findTestClasses();
 
 	tests = ~expandSuiteGlob.(tests);
+	assertNoDuplicates.(tests);
 
 	tests = List.newFrom(tests.collect(Dictionary.newFrom(_)));
+	assertNoDuplicates.(tests);
 
 	// Expand *'s
 	toExpand = tests.select({|t| (t[\test] == "*") && (t[\completed] != true) });
+	assertNoDuplicates.(tests);
 	~verboseSetup.if({"Expanding %\n".postf(toExpand)});
 	toExpand.do {|wildcardTest|
 		var allTests, newTest, class;
@@ -104,6 +292,7 @@ if(File.exists(~testProto).not) {
 				));
 
 				tests.add(newTest);
+				assertNoDuplicates.(tests);
 				~verboseSetup.if({"tests.size: %".format(tests.size).postln});
 			};
 			tests.remove(wildcardTest);
@@ -140,9 +329,16 @@ if(File.exists(~testProto).not) {
 			true;
 		}
 	});
+	assertNoDuplicates.(tests);
 	// test_record["tests"] = tests;
 	// ~writeResult.(tests, file);
 	~verboseSetup.if({"After exclude: ".post; tests.do(_.postln)});
+	//temp
+	1000.do({|i|selectThisTestClump.(tests.scramble,thisClump,nClumps)});
+	tests = selectThisTestClump.(tests,thisClump,nClumps);
+	assertNoDuplicates.(tests);
+
+	~verboseSetup.if({"After clump: ".post; tests.do(_.postln)});
 
 	"\n\n\t*** Running the tests ***\n\n".post;
 
@@ -238,6 +434,16 @@ if(File.exists(~testProto).not) {
 	// 0.exit;
 	if(~exitWhenDone) {
 		0.exit;
+		this.halt;
 	}; // exit only if the script was called with arguments
 }.forkIfNeeded(AppClock);
+} { |error| //catch
+	if(~exitWhenDone) {
+		error.errorString.postln;
+		2.exit;
+		this.halt;
+	} {
+		error.throw;
+	};
+};
 )

@@ -6,12 +6,6 @@ on:
       - 'HelpSource/**'
       - 'sounds/**'
       - '*.md'
-  pull_request:
-    paths-ignore:
-      - 'examples/**'
-      - 'HelpSource/**'
-      - 'sounds/**'
-      - '*.md'
 
 jobs:
   lint:
@@ -79,6 +73,7 @@ jobs:
     uses: ./.github/workflows/test_linux.yml
     with:
       artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-ubuntu-22.04-gcc12"
+      os: "ubuntu-22.04"
     secrets: inherit
 
   test-macos:
@@ -86,6 +81,7 @@ jobs:
     uses: ./.github/workflows/test_macos.yml
     with:
       artifact-file: "SuperCollider-${{ needs.version-getter.outputs.sc-version }}-macOS-arm64.dmg"
+      os: "macos-15"
     secrets: inherit
 
   # test-windows:
